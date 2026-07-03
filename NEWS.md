@@ -1,15 +1,7 @@
----
-
-editor_options: 
-  markdown: 
-    wrap: 80
----
-
-# review 0.0.2
-
 ## Development improvements
 
-- Added support for review labels, reviewer comments, and richer provenance metadata.
+- Added support for review labels, reviewer comments, and richer provenance
+  metadata.
 - Expanded documentation, examples, vignettes, and test coverage.
 
 # review 0.0.1
