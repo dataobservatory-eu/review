@@ -36,7 +36,13 @@ with additional review rounds.
 
 ## Creating reviewable claims
 
-A review begins with a collection of claims.
+The review package provides four verbs for reproducible semantic review:
+
+- `claims_df()` creates reviewable claims.
+- `review()` allocates a review round and labels the intended review task.
+- `explain()` records how the review was carried out.
+- `finalise_review()` accepts the reviewed values as the current candidate
+  claims while preserving the complete review history.
 
 ```{r claims_df}
 claims <- claims_df(
@@ -78,15 +84,19 @@ starting point for the first review round.
 
 ## First review round
 
-A review round allocates one or more review columns. At this stage the package
-records that a review is about to take place, but it does not prescribe how that
-review should be performed.
+A review round allocates a new review column for a reviewable variable and
+records a label describing the intended review task. The label serves as an
+instruction before the review is carried out and later identifies the completed
+review activity.
 
 ```{r review1}
 reviewed <- claims |>
-  review("circumference")
+  review(
+    "circumference",
+    label = "Remeasure the circumference of each tree."
+  )
 
-names(reviewed)
+attr(reviewed, "review_label")
 ```
 
 The review algebra is independent of the review interface. Reviewers may use
@@ -115,19 +125,21 @@ Once the review values have been entered, the review round can be documented.
 reviewed <- reviewed |>
   explain(
     activity = "manual review",
-    agent = person(
-      "Jane",
-      "Doe",
-      role = "rev"
-    ),
-    used = "doi:10.5281/zenodo.1234567"
+    agent = person("Jane", "Doe", role = "rev"),
+    used = "doi:10.5281/zenodo.1234567",
+    comment = "Verified against the laboratory notebook."
   )
+
+attr(reviewed, "prov_comment")
 ```
 
-`explain()` records how the review was performed, who performed it, and\
-what evidence or resources were used. Provenance is stored separately from\
-the reviewed values, allowing the same review data to be interpreted or\
-exported in different provenance models.
+`explain()` records how the review was performed, who performed it, which
+evidence or resources informed the review, and optional reviewer comments
+documenting how the review task was interpreted or why particular decisions were
+made.
+
+Provenance is stored separately from the reviewed values, allowing the same
+review data to be interpreted or exported in different provenance models.
 
 Readers familiar with FAIR data principles, reproducible research, or\
 statistical and digital heritage workflows may recognise a common problem:\
@@ -143,6 +155,16 @@ possible. By separating reviewed values from the provenance of the review,\
 it records which **agents** (people, software, or AI models) performed\
 which **activities**, and what **entities** (datasets, publications,\
 files, or other resources) informed those decisions.
+
+`review()` and `explain()` deliberately separate the description of a review
+task from the documentation of its execution.
+
+- A review **label** describes what reviewers are asked to do. It therefore
+  serves as a task description before the review and as the label of the
+  completed review activity afterwards.
+
+- A reviewer **comment** explains how the task was interpreted or why particular
+  review decisions were made.
 
 This lightweight provenance layer follows the concepts of the PROV data\
 model without requiring users to work directly with RDF or ontologies. It\
@@ -160,11 +182,48 @@ attr(reviewed, "prov_agent")
 attr(reviewed, "prov_used")
 ```
 
-## Second review round
+## Complete workflow
 
-Additional review rounds continue from the current accepted review rather than
-from the original candidate values. Each round therefore forms a chain of
-semantic revisions.
+A complete workflow may consist of several reviews or refinements.
+
+```{r workflow } 
+claims <- claims_df(
+  Orange,
+  scope_var = "age",
+  subject_var = "Tree"
+) |>
+  review("circumference")
+
+claims$circumference_review_1[1] <- 31
+
+claims <- claims |>
+  explain(
+    activity = "manual review",
+    agent = person("Jane", "Doe", role = "rev"),
+    used = "doi:10.5281/zenodo.1234567"
+  ) |>
+  review("circumference")
+
+claims$circumference_review_2[1] <- 32
+claims <- claims |>
+  explain(
+    activity = "quality assurance",
+    agent = "OpenRefine 3.10",
+    used = "doi:10.2908/NAMA_10_GDP"
+  ) |>
+  finalise_review()
+```
+
+
+
+## Adding subsequent rounds of review
+
+Each review round is allocated from the current candidate values. After
+`finalise_review()`, those candidate values become the accepted result of the
+previous review, allowing further review rounds to continue from the updated
+claims.
+
+Consider this second-round review:
 
 ```{r review2}
 reviewed <- reviewed |>
@@ -226,38 +285,7 @@ The complete review algebra therefore consists of four operations: create
 reviewable `claims`, allocate `review` rounds, document (`explain`) each review,
 and promote the current review into the next candidate version.
 
-## Complete workflow
-
-```{r workflow }
-claims <- claims_df(
-  Orange,
-  scope_var = "age",
-  subject_var = "Tree"
-) |>
-  review("circumference")
-
-claims$circumference_review_1[1] <- 31
-
-claims <- claims |>
-  explain(
-    activity = "manual review",
-    agent = person("Jane", "Doe", role = "rev"),
-    used = "doi:10.5281/zenodo.1234567"
-  ) |>
-  review("circumference")
-
-claims$circumference_review_2[1] <- 32
-
-claims <- claims |>
-  explain(
-    activity = "quality assurance",
-    agent = "OpenRefine 3.10",
-    used = "doi:10.2908/NAMA_10_GDP"
-  ) |>
-  finalise_review()
-```
-
-## Garamantes example
+## Garamantas example
 
 The review algebra is independent of the application domain. The same workflow
 can be applied to statistical observations, archival metadata, cultural heritage
@@ -265,35 +293,35 @@ collections, or machine-generated annotations.
 
 ```{r garamantas}
 garamantas <- data.frame(
-  resources = c("https://garamantas.lv/en/file/475833",
-                "https://garamantas.lv/en/file/471397",
-                "https://garamantas.lv/en/file/475825"),
+  resources = c(
+    "https://garamantas.lv/en/file/475833",
+    "https://garamantas.lv/en/file/471397",
+    "https://garamantas.lv/en/file/475825"
+  ),
   instance_of = rep("photograph", 3),
-  depicts  = rep("building", 3)
+  depicts = rep("building", 3)
 )
 
 garamantas_claims <- claims_df(
-    garamantas,
-    scope_var = "instance_of",
-    subject_var = "resources"
-  ) |>
-  review(c("depicts")) 
+  garamantas,
+  scope_var = "instance_of",
+  subject_var = "resources"
+) |>
+  review(c("depicts"))
 
 garamantas_claims$depicts_review_1[2] <- "group of people"
-
-
 ```
 
 Although the domain differs, the review algebra remains unchanged:
 
 ``` text
-claims
-    ↓
-review
-    ↓
-explain
-    ↓
-finalise_review
+claims_df()
+      ↓
+review()
+      ↓
+explain()
+      ↓
+finalise_review()
 ```
 
 ```{r showgaramatas}
