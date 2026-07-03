@@ -4,58 +4,38 @@
 \alias{claims_df}
 \title{Create a reviewable claims table}
 \usage{
-claims_df(data, scope, subject, id = NULL)
+claims_df(
+  .data,
+  scope_var,
+  subject_var,
+  id_var = NULL,
+  prov_activity = "create",
+  prov_agent = NULL,
+  prov_used = NULL
+)
 }
 \arguments{
-\item{data}{A data frame or tibble.}
+\item{.data}{A data frame or tibble.}
 
-\item{scope}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}> One or more columns
-defining the observational scope of each claim.}
+\item{scope_var}{Character vector of scope variable names.}
 
-\item{subject}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}> One or more columns
-identifying the subject of each claim.}
+\item{subject_var}{Character vector of subject variable names.}
 
-\item{id}{Optional <\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}> identifying an
-existing unique identifier column. If omitted, a sequential \code{claim_id}
-column is created.}
+\item{id_var}{Optional identifier variable. If \code{NULL}, a sequential
+\code{claim_id} is created.}
+
+\item{prov_activity}{Provenance activity creating the candidate values.}
+
+\item{prov_agent}{Provenance agent.}
+
+\item{prov_used}{Provenance source or entity.}
 }
 \value{
-A tibble of class \code{claims_df} containing:
-\describe{
-\item{Identifier columns}{The supplied identifier (or generated
-\code{claim_id}), scope, and subject columns.}
-\item{Candidate columns}{One \verb{_candidate} column for each reviewable
-variable.}
-}
-
-The returned object also stores the review metadata as attributes:
-\itemize{
-\item \code{scope}
-\item \code{subject}
-\item \code{reviewable}
-}
+A \code{claims_df}.
 }
 \description{
-Converts a tidy data frame into a reviewable claims table. The user specifies
-the observational scope and subject columns, while all remaining variables are
-treated as reviewable claim values. For each reviewable variable, a
-corresponding \verb{_candidate} column is created containing the initial values.
-}
-\details{
-The returned object remains a tibble with additional class
-\code{claims_df}. Metadata identifying the scope, subject, and reviewable
-variables are stored as attributes for use by downstream review operations.
-}
-\examples{
-data("Orange", package = "datasets")
-
-orange_claims <- claims_df(
-  Orange,
-  scope = age,
-  subject = Tree
-)
-
-names(orange_claims)
-attr(orange_claims, "reviewable")
-
+Converts a data frame into a reviewable collection of claims.
+Identifier, scope, and subject variables are placed first. Remaining
+variables become reviewable claim values stored as \verb{_candidate}
+columns.
 }

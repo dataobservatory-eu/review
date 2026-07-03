@@ -1,112 +1,76 @@
 #' Create a reviewable claims table
 #'
-#' Converts a tidy data frame into a reviewable claims table. The user specifies
-#' the observational scope and subject columns, while all remaining variables are
-#' treated as reviewable claim values. For each reviewable variable, a
-#' corresponding `_candidate` column is created containing the initial values.
+#' Converts a data frame into a reviewable collection of claims.
+#' Identifier, scope, and subject variables are placed first. Remaining
+#' variables become reviewable claim values stored as `_candidate`
+#' columns.
 #'
-#' The returned object remains a tibble with additional class
-#' `claims_df`. Metadata identifying the scope, subject, and reviewable
-#' variables are stored as attributes for use by downstream review operations.
+#' @param .data A data frame or tibble.
+#' @param scope_var Character vector of scope variable names.
+#' @param subject_var Character vector of subject variable names.
+#' @param id_var Optional identifier variable. If `NULL`, a sequential
+#'   `claim_id` is created.
+#' @param prov_activity Provenance activity creating the candidate values.
+#' @param prov_agent Provenance agent.
+#' @param prov_used Provenance source or entity.
 #'
-#' @param data A data frame or tibble.
-#' @param scope <[`tidy-select`][dplyr::dplyr_tidy_select]> One or more columns
-#'   defining the observational scope of each claim.
-#' @param subject <[`tidy-select`][dplyr::dplyr_tidy_select]> One or more columns
-#'   identifying the subject of each claim.
-#' @param id Optional <[`tidy-select`][dplyr::dplyr_tidy_select]> identifying an
-#'   existing unique identifier column. If omitted, a sequential `claim_id`
-#'   column is created.
-#'
-#' @return
-#' A tibble of class `claims_df` containing:
-#' \describe{
-#'   \item{Identifier columns}{The supplied identifier (or generated
-#'     `claim_id`), scope, and subject columns.}
-#'   \item{Candidate columns}{One `_candidate` column for each reviewable
-#'     variable.}
-#' }
-#'
-#' The returned object also stores the review metadata as attributes:
-#' \itemize{
-#'   \item `scope`
-#'   \item `subject`
-#'   \item `reviewable`
-#' }
-#'
-#' @importFrom dplyr mutate row_number select all_of
-#' @importFrom rlang enquo quo_is_null
-#' @importFrom tidyselect eval_select
-#' @importFrom utils data
-#'
-#' @examples
-#' data("Orange", package = "datasets")
-#'
-#' orange_claims <- claims_df(
-#'   Orange,
-#'   scope = age,
-#'   subject = Tree
-#' )
-#'
-#' names(orange_claims)
-#' attr(orange_claims, "reviewable")
-#'
+#' @return A `claims_df`.
 #' @export
-claims_df <- function(data,
-                      scope,
-                      subject,
-                      id = NULL) {
+claims_df <- function(
+  .data,
+  scope_var,
+  subject_var,
+  id_var = NULL,
+  prov_activity = "create",
+  prov_agent = NULL,
+  prov_used = NULL
+) {
+  if (!is.data.frame(.data)) {
+    stop(".data must be a data frame.", call. = FALSE)
+  }
 
-  scope <- tidyselect::eval_select(
-    rlang::enquo(scope),
-    data
-  )
+  if (is.null(id_var)) {
+    .data$claim_id <- seq_len(nrow(.data))
+    id_var <- "claim_id"
+  }
 
-  subject <- tidyselect::eval_select(
-    rlang::enquo(subject),
-    data
-  )
+  required <- unique(c(id_var, scope_var, subject_var))
+  missing <- setdiff(required, names(.data))
 
-  if (rlang::quo_is_null(rlang::enquo(id))) {
-
-    data <- dplyr::mutate(
-      data,
-      claim_id = dplyr::row_number()
-    )
-
-    id_name <- "claim_id"
-
-  } else {
-
-    id_name <- names(
-      tidyselect::eval_select(
-        rlang::enquo(id),
-        data
-      )
+  if (length(missing)) {
+    stop(
+      "Unknown variable(s): ",
+      paste(missing, collapse = ", "),
+      call. = FALSE
     )
   }
 
-  protected <- unique(c(
-    id_name,
-    names(scope),
-    names(subject)
-  ))
+  reviewable <- setdiff(names(.data), required)
 
-  reviewable <- setdiff(names(data), protected)
+  claims <- dplyr::select(.data, dplyr::all_of(required))
 
-  out <- data %>%
-    dplyr::select(dplyr::all_of(protected))
-
-  for (nm in reviewable) {
-    out[[paste0(nm, "_candidate")]] <- data[[nm]]
+  for (var in reviewable) {
+    claims[[paste0(var, "_candidate")]] <- .data[[var]]
   }
 
-  class(out) <- unique(c("claims_df", class(out)))
+  class(claims) <- unique(c("claims_df", class(claims)))
 
-  attr(out, "scope") <- names(scope)
-  attr(out, "subject") <- names(subject)
-  attr(out, "reviewable") <- reviewable
+  attr(claims, "id") <- id_var
+  attr(claims, "scope") <- scope_var
+  attr(claims, "subject") <- subject_var
+  attr(claims, "reviewable") <- reviewable
 
-  out
+  attr(claims, "review_column") <- stats::setNames(
+    paste0(reviewable, "_candidate"),
+    reviewable
+  )
+
+  attr(claims, "prov_id") <- "candidate"
+  attr(claims, "prov_activity") <- c(candidate = prov_activity)
+  attr(claims, "prov_agent") <-
+    c(candidate = as_prov_character(prov_agent))
+  attr(claims, "prov_used") <-
+    c(candidate = as_prov_character(prov_used))
+
+  claims
 }
-
