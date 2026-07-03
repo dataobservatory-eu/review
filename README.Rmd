@@ -1,0 +1,95 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# review
+
+<!-- badges: start -->
+
+[![lifecycle](https://lifecycle.r-lib.org/articles/figures/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![Project Status:
+WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![devel-version](https://img.shields.io/badge/devel%20version-0.0.0090-blue.svg)](https://github.com/dataobservatory-eu/fscontext/tree/devel)
+[![dataobservatory](https://img.shields.io/badge/ecosystem-dataobservatory.eu-3EA135.svg)](https://dataobservatory.eu/)
+
+<!-- badges: end -->
+
+**review** provides a tidy relational algebra for iterative semantic review of
+tabular data.
+
+Rather than overwriting reviewed values, the package creates successive review
+rounds that preserve candidate values, review history, reviewer provenance, and
+observation status. It is designed for reproducible review workflows in official
+statistics, digital humanities, archives, and other data-intensive disciplines.
+
+## Installation
+
+Install the development version from GitHub:
+
+```r
+# install.packages("pak")
+pak::pak("dataobservatory-eu/review")
+```
+
+## Review workflow
+
+The review algebra consists of four operations.
+
+```text
+claims_df()
+      ↓
+review()
+      ↓
+explain()
+      ↓
+finalise_review()
+```
+
+- `claims_df()` creates reviewable claims from an ordinary data frame.
+- `review()` allocates one or more review rounds.
+- `explain()` records provenance for each review round.
+- `finalise_review()` promotes the current review into the next candidate
+  version.
+
+## Example
+
+```{r}
+library(review)
+
+claims <- claims_df(
+  Orange,
+  scope_var = "age",
+  subject_var = "Tree"
+)
+
+reviewed <- claims |>
+  review("circumference")
+
+reviewed$circumference_review_1[1] <- 31
+
+reviewed <- reviewed |>
+  explain(
+    activity = "manual review",
+    agent = person("Jane", "Doe", role = "rev"),
+    used = "doi:10.5281/zenodo.1234567"
+  ) |>
+  finalise_review()
+
+reviewed
+```
+
+For a complete introduction, see the **Review Algebra** vignette.
+
+- Website: <https://review.dataobservatory.eu/>
+- Issues: <https://github.com/dataobservatory-eu/review/issues>

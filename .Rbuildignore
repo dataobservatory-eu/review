@@ -7,3 +7,6 @@
 ^data-raw$
 ^review-review.txt$
 ^~$garamantas_review\.xlsx$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

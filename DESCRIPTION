@@ -8,15 +8,18 @@ Authors@R:
            email = "daniel.antal@dataobservatory.eu", 
            role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-7513-6760"))
-Description: Provides a tidy framework for iterative semantic review of
-    tabular data. The package extends tidy data workflows with review-aware
-    data structures and operations that preserve candidate values, review
-    history, provenance, reviewer attribution, and observation status while
-    remaining compatible with ordinary tibbles. It is designed to support
-    reproducible semantic stabilisation workflows and integrates naturally
-    with the tidyverse and metadata packages such as 'dataset'.
+Description: Provides a tidy relational algebra for iterative semantic
+    review of tabular data. The package creates reviewable claims from
+    ordinary data frames, allocates successive review rounds, records
+    provenance for each review, and finalises reviewed values while
+    preserving review history. It supports reproducible review workflows
+    that remain compatible with ordinary data frames and metadata packages
+    such as 'dataset'.
 License: MIT + file LICENSE
 Encoding: UTF-8
+URL: https://review.dataobservatory.eu/,
+    https://github.com/dataobservatory-eu/review
+BugReports: https://github.com/dataobservatory-eu/review/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 8.0.0
 Imports: 
