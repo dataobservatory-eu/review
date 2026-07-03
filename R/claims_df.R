@@ -65,12 +65,28 @@ claims_df <- function(
     reviewable
   )
 
+  ## Initialise provenance metadata ------------------------------------
+
   attr(claims, "prov_id") <- "candidate"
-  attr(claims, "prov_activity") <- c(candidate = prov_activity)
-  attr(claims, "prov_agent") <-
-    c(candidate = as_prov_character(prov_agent))
-  attr(claims, "prov_used") <-
-    c(candidate = as_prov_character(prov_used))
+
+  ## Initialise candidate metadata -------------------------------------
+
+  candidate_activity <-
+    if (is.null(prov_activity)) NA_character_ else prov_activity
+  candidate_agent <-
+    if (is.null(prov_agent)) NA_character_ else as_prov_character(prov_agent)
+
+  candidate_used <-
+    if (is.null(prov_used)) NA_character_ else as_prov_character(prov_used)
+
+  ## Attach candidate metadata -----------------------------------------
+
+  attr(claims, "prov_activity") <-
+    stats::setNames(candidate_activity, "candidate")
+  attr(claims, "prov_agent") <- stats::setNames(candidate_agent, "candidate")
+  attr(claims, "prov_used") <- stats::setNames(candidate_used, "candidate")
+  attr(claims, "review_label") <- stats::setNames(NA_character_, "candidate")
+  attr(claims, "prov_comment") <- stats::setNames(NA_character_, "candidate")
 
   claims
 }
