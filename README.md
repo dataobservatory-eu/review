@@ -8,7 +8,7 @@
 [![lifecycle](https://lifecycle.r-lib.org/articles/figures/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![Project Status:
 WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
-[![devel-version](https://img.shields.io/badge/devel%20version-0.0.0090-blue.svg)](https://github.com/dataobservatory-eu/fscontext/tree/devel)
+[![devel-version](https://img.shields.io/badge/devel%20version-0.0.1-blue.svg)](https://github.com/dataobservatory-eu/fscontext/tree/devel)
 [![dataobservatory](https://img.shields.io/badge/ecosystem-dataobservatory.eu-3EA135.svg)](https://dataobservatory.eu/)
 
 <!-- badges: end -->
