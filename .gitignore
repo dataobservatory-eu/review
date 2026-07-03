@@ -36,3 +36,4 @@ rsconnect/
 garamantas_review.xlsx
 inst/doc
 review-review.txt
+data-raw/.review.R
