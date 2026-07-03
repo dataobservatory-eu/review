@@ -1,0 +1,30 @@
+Package: review
+Title: Tidy Relational Algebra for Semantic Review
+Version: 0.0.0.9000
+Language: en-GB
+Authors@R: 
+    person(given = "Daniel", 
+           family = "Antal", 
+           email = "daniel.antal@dataobservatory.eu", 
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-7513-6760"))
+Description: Provides a tidy framework for iterative semantic review of
+    tabular data. The package extends tidy data workflows with review-aware
+    data structures and operations that preserve candidate values, review
+    history, provenance, reviewer attribution, and observation status while
+    remaining compatible with ordinary tibbles. It is designed to support
+    reproducible semantic stabilisation workflows and integrates naturally
+    with the tidyverse and metadata packages such as 'dataset'.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 8.0.0
+Imports: 
+    dplyr,
+    magrittr,
+    rlang,
+    tidyselect,
+    utils
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
