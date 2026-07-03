@@ -1,3 +1,8 @@
 ^LICENSE\.md$
 ^garamantas_review\.xlsx$
 ^prototype$
+^.*\.Rproj$
+^\.Rproj\.user$
+^README\.Rmd$
+^data-raw$
+^review-review.txt$

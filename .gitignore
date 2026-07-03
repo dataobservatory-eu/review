@@ -34,3 +34,5 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 garamantas_review.xlsx
+inst/doc
+review-review.txt
