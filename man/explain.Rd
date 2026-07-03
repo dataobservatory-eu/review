@@ -4,21 +4,61 @@
 \alias{explain}
 \title{Explain a review round}
 \usage{
-explain(.data, activity = NULL, agent = NULL, used = NULL)
+explain(.data, activity = NULL, agent = NULL, used = NULL, comment = NULL)
 }
 \arguments{
 \item{.data}{A \code{claims_df}.}
 
-\item{activity}{Review activity.}
+\item{activity}{Optional type of review activity.}
 
-\item{agent}{Person or software carrying out the review.}
+\item{agent}{Optional person or software agent carrying out the review.}
 
-\item{used}{Optional evidence, source or other provenance entity.}
+\item{used}{Optional evidence, source or other provenance entity used
+during the review.}
+
+\item{comment}{Optional reviewer comment describing how the review
+task was interpreted or why particular review decisions were made.}
 }
 \value{
-A \code{claims_df}.
+A \code{claims_df} with updated provenance metadata for the most recent
+review round.
 }
 \description{
 Records provenance information for the most recently created review
-round.
+round in a \code{claims_df}.
+}
+\details{
+\code{explain()} documents how a review task was carried out after the
+review has been completed. It complements \code{review()}, which creates
+the review round and assigns a human-readable label describing the
+intended review task.
+
+The recorded provenance may describe the review activity, the person
+or software agent performing the review, evidence or other resources
+consulted during the review, and optional reviewer comments explaining
+how the review task was interpreted or why particular review decisions
+were made.
+}
+\examples{
+reviewed <- claims_df(
+  Orange,
+  scope_var = "age",
+  subject_var = "Tree"
+) |>
+  review(
+    "circumference",
+    label = "Remeasure the circumference of each tree."
+  ) |>
+  explain(
+    activity = "manual_review",
+    agent = person("Jane", "Doe", role = "rev"),
+    used = "doi:10.5281/zenodo.1234567",
+    comment = "Measurements verified against the laboratory notebook."
+  )
+
+attr(reviewed, "prov_activity")
+attr(reviewed, "prov_agent")
+attr(reviewed, "prov_used")
+attr(reviewed, "prov_comment")
+
 }
