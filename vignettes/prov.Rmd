@@ -18,76 +18,163 @@ knitr::opts_chunk$set(
 library(review)
 ```
 
-### Review algebra is implementation-independent
+## Review algebra is implementation-independent
 
-The same review object can be edited by
+Most data review packages are built around a particular interface, such as a web application, spreadsheet, or interactive editor. In contrast, the review algebra separates the logical structure of a review from the environment in which the review is carried out.
 
--  dplyr
+A review round simply allocates a new version of one or more reviewable variables. The package does not prescribe how those values are inspected, modified, or validated. Instead, reviewers may use whichever tools best suit the task before writing the reviewed values back into the allocated review columns.
 
--  Excel
+For example, a review may be carried out using
 
--  Shiny
+- `dplyr` pipelines for reproducible transformations;
 
--  OpenRefine
+- spreadsheet software such as Microsoft Excel or LibreOffice Calc;
 
-### Review rounds as provenance activities
+- interactive applications built with Shiny;
 
-Show
+- OpenRefine for reconciliation and data cleaning;
 
-```         
-candidate ↓ review_1 ↓ review_2
-```
+- domain-specific annotation or curation tools; or
 
-and explain that every review round corresponds to one provenance activity.
+- machine learning or large language models operating under human supervision.
 
-### Provenance attributes
+Regardless of how the review is performed, the resulting data structure is identical. Review rounds, provenance metadata, and review history remain portable between workflows, allowing the same review object to move between different software environments without losing its semantic structure.
 
-For example
+This separation between review logic and review interface makes the review algebra suitable both for interactive curation and for automated or semi-automated review pipelines.
 
-```         
-attr(gdp, "prov_activity")  candidate  review_1  review_2 download   impute    forecast
-```
+## Review rounds as provenance activities
+
+Each review round represents a distinct semantic revision of one or more claims.
 
 ```         
-attr(gdp, "prov_agent")
+candidate 
+   ↓ 
+review_1 
+   ↓ 
+review_2
 ```
 
-```         
-attr(gdp, "prov_used")
+The candidate values represent the current working claims. Calling `review()` creates a new review round by allocating a new set of review columns together with a unique review identifier. At this stage the review has not yet been carried out. Instead, the package records a *normative review task*: an explicit instruction describing what the reviewer is expected to do.
+
+For example,
+
+```{r claims}
+claims <- claims_df(
+  Orange,
+  scope_var = "age",
+  subject_var = "Tree"
+) |>
+  review("circumference")
+
+claims |>
+  review(
+    "circumference",
+    label = "Remeasure the circumference of each tree."
+  ) %>%
+  head(n = 6)
 ```
 
-### Relationship to PROV
+creates a review round labelled *"Remeasure the circumference of each tree."* Before the review takes place, this label serves as a task description for the reviewer. Once the review has been completed, the same label identifies the corresponding review activity.
 
-Without implementing RDF.
+After the review has been carried out, `explain()` records how that activity was performed:
 
-Simply explain
+- the review activity;
 
-| Review algebra           | PROV           |
-|--------------------------|----------------|
-| candidate/review columns | Entity         |
-| prov_activity            | Activity       |
-| prov_agent               | Agent          |
-| prov_used                | used           |
-| review chain             | wasGeneratedBy |
+- the reviewing person or software agent;
 
-The important point is
+- the evidence or other resources consulted; and
 
-> 
->
-> The package stores provenance in a lightweight R representation that can later be serialised into PROV or other provenance models.
+- optional reviewer comments explaining how the task was interpreted or why particular review decisions were made.
 
-### Outlook
+This deliberately separates **prescription** from **documentation**. `review()` defines what should be reviewed, whereas `explain()` records what actually happened.
 
-Mention
+This distinction aligns naturally with the concepts of the [W3C Provenance Data Model](https://www.w3.org/TR/prov-overview/)(PROV), which has an ontological form ([PROV-O](https://www.w3.org/TR/2013/REC-prov-o-20130430/)) and can be used to serialise the provenance that the `review` package records. Each review round corresponds to a provenance activity. The review label can be understood as a human-readable label for that activity, while reviewer comments provide additional documentation describing how the activity was carried out. In RDF serialisations, these naturally correspond to [rdfs:label](https://www.w3.org/TR/rdf-schema/#ch_label) and [rdfs:comment](https://www.w3.org/TR/rdf-schema/#ch_comment) associated with a [`prov:Activity`](https://www.w3.org/TR/2013/REC-prov-o-20130430/#Activity).
 
--  RDF
+The review package does not require users to work directly with RDF or PROV-O. Instead, it stores this information as lightweight R attributes that can later be exported to provenance-aware representations while remaining convenient to manipulate in ordinary data analysis workflows.
 
--  PROV-O
+## Provenance attributes
 
--  RiC
+The review algebra stores provenance as ordinary R attributes attached to a claims_df. Each provenance attribute is indexed by the review round identifier, allowing multiple review activities to be recorded independently while remaining attached to the same review object.
 
--  SDMX
+For example,
 
--  DataCite
+```{r prov_activity}
+claims <- claims |>
+  explain(
+    activity = "manual review",
+    agent = person("Jane", "Doe", role = "rev"),
+    used = "doi:10.5281/zenodo.1234567",
+    comment = "Verified against the laboratory notebook."
+  )
 
-without implementing them.
+attr(claims, "prov_activity")
+```
+
+Similarly,
+
+```{r prov_agent}
+attr(claims, "prov_agent")
+```
+
+records the people or software agents responsible for each review activity.
+
+```{r prov_used}
+attr(claims, "prov_used")
+```
+
+records datasets, publications, files, or other resources consulted during the review.
+
+```{r prov_comment}
+attr(claims, "prov_comment")
+```
+
+stores optional reviewer comments documenting how the review task was interpreted or why particular review decisions were made.
+
+Finally,
+
+```{r review_label}
+attr(claims, "review_label")
+```
+
+stores the labels assigned when each review round was created. Before a review is carried out, these labels serve as task descriptions for reviewers. Afterwards, they identify the corresponding review activities.
+
+Storing provenance in this lightweight form keeps review objects easy to inspect, subset, and manipulate using ordinary R tools while preserving sufficient information to reconstruct the complete review history or export it to more formal provenance representations.
+
+## Relationship to PROV
+
+The review algebra is not an implementation of the W3C Provenance Data Model (PROV), nor does it require users to work directly with RDF or semantic web technologies. Instead, it adopts a small subset of the concepts introduced by PROV because they provide a well-established vocabulary for describing how data are created, reviewed, and revised.
+
+The correspondence between the review algebra and PROV concepts is straightforward.
+
+| Review algebra               | PROV concept          |
+|------------------------------|-----------------------|
+| Candidate and review columns | `prov:Entity`         |
+| Review round                 | `prov:Activity`       |
+| `prov_activity`              | Activity description  |
+| `prov_agent`                 | `prov:Agent`          |
+| `prov_used`                  | `prov:used`           |
+| `review_label`               | `rdfs:label`          |
+| `prov_comment`               | `rdfs:comment`        |
+| Review chain                 | `prov:wasGeneratedBy` |
+
+Each candidate or reviewed value represents an entity whose provenance may be described. Each review round corresponds to a provenance activity that generates the next version of those values. The recorded agent identifies the reviewer, software application, or AI system performing the activity, while the recorded resources document the evidence or other entities consulted during the review.
+
+The `review` package stores this information as lightweight R attributes rather than RDF triples. This makes review objects easy to inspect and manipulate using ordinary R workflows while retaining sufficient information to serialise the review history into PROV or compatible provenance representations when required. The companion [dataset](https://dataset.dataobservatory.eu/) package provides methods to serialise the provenance into RDF using PROV, SDMX and other ontological patterns.
+
+## Outlook
+
+The review algebra deliberately focuses on representing semantic review within ordinary R data frames. It does not attempt to implement a complete provenance ontology or metadata standard. Instead, it provides a lightweight review layer that can be combined with richer metadata and knowledge representation frameworks.
+
+The provenance metadata recorded by the package can be aligned with a variety of existing standards and models. Depending on the application domain, reviewed data may later be described using:
+
+- **PROV-O**, for interoperable provenance graphs and RDF serialisation;
+
+- **Records in Contexts (RiC)**, for archival description and contextual provenance;
+
+- **SDMX**, for documenting statistical production and quality assurance workflows;
+
+- **DataCite**, for describing published datasets and their provenance; and
+
+- other domain-specific metadata standards.
+
+The companion [dataset](https://dataset.dataobservatory.eu/) package provides an R-native representation for describing released datasets. Together, `review` and `dataset` separate two complementary concerns: documenting how data were reviewed before publication and describing the published datasets themselves. This separation makes it possible to preserve review history without constraining how reviewed data are ultimately disseminated or archived.
