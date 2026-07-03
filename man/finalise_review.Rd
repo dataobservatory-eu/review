@@ -10,9 +10,35 @@ finalise_review(.data)
 \item{.data}{A \code{claims_df}.}
 }
 \value{
-A \code{claims_df}.
+A \code{claims_df} with updated candidate values.
 }
 \description{
-Promotes the most recent reviewed values to the current claims.
-The review history and provenance metadata are preserved.
+Promotes the most recently reviewed values to the current candidate
+claims.
+}
+\details{
+\code{finalise_review()} accepts the most recent review round by replacing
+each \verb{_candidate} value with the corresponding reviewed value. Earlier
+review columns remain unchanged, preserving the complete review
+history.
+
+Finalising a review resets the current review target to the updated
+candidate values. Existing provenance metadata, review labels, review
+comments and earlier review rounds are retained, allowing the complete
+review process to be reconstructed.
+}
+\examples{
+reviewed <- claims_df(
+  Orange,
+  scope_var = "age",
+  subject_var = "Tree"
+) |>
+  review("circumference")
+
+reviewed$circumference_review_1 <- reviewed$circumference_review_1 + 1
+
+accepted <- finalise_review(reviewed)
+
+accepted$circumference_candidate
+
 }
