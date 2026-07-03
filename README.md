@@ -8,19 +8,20 @@
 [![lifecycle](https://lifecycle.r-lib.org/articles/figures/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![Project Status:
 WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
-[![devel-version](https://img.shields.io/badge/devel%20version-0.0.1-blue.svg)](https://github.com/dataobservatory-eu/fscontext/tree/devel)
+[![devel-version](https://img.shields.io/badge/devel%20version-0.0.2-blue.svg)](https://github.com/dataobservatory-eu/review/tree/devel)
 [![dataobservatory](https://img.shields.io/badge/ecosystem-dataobservatory.eu-3EA135.svg)](https://dataobservatory.eu/)
 
 <!-- badges: end -->
 
-**review** provides a tidy relational algebra for iterative semantic
+**review** provides a lightweight review algebra for iterative semantic
 review of tabular data.
 
 Rather than overwriting reviewed values, the package creates successive
-review rounds that preserve candidate values, review history, reviewer
-provenance, and observation status. It is designed for reproducible
-review workflows in official statistics, digital humanities, archives,
-and other data-intensive disciplines.
+review rounds that preserve candidate values, review history,
+observation status, and provenance. It supports reproducible
+human-in-the-loop review workflows in official statistics, digital
+humanities, archives, cultural heritage, and other data-intensive
+disciplines.
 
 ## Installation
 
@@ -33,7 +34,7 @@ pak::pak("dataobservatory-eu/review")
 
 ## Review workflow
 
-The review algebra consists of four operations.
+The review package provides four verbs for reproducible semantic review.
 
 ``` text
 claims_df()
@@ -46,10 +47,21 @@ finalise_review()
 ```
 
 - `claims_df()` creates reviewable claims from an ordinary data frame.
-- `review()` allocates one or more review rounds.
-- `explain()` records provenance for each review round.
-- `finalise_review()` promotes the current review into the next
-  candidate version.
+
+<!-- -->
+
+- `review()` allocates a review round and labels the intended review
+  task.
+
+<!-- -->
+
+- `explain()` records how the review was carried out, including
+  provenance and optional reviewer comments.
+
+<!-- -->
+
+- `finalise_review()` accepts the reviewed values as the current
+  candidate claims while preserving the complete review history.
 
 ## Example
 
@@ -63,7 +75,10 @@ claims <- claims_df(
 )
 
 reviewed <- claims |>
-  review("circumference")
+  review(
+    "circumference",
+    label = "Remeasure the circumference of each tree."
+  )
 
 reviewed$circumference_review_1[1] <- 31
 
@@ -71,7 +86,8 @@ reviewed <- reviewed |>
   explain(
     activity = "manual review",
     agent = person("Jane", "Doe", role = "rev"),
-    used = "doi:10.5281/zenodo.1234567"
+    used = "doi:10.5281/zenodo.1234567",
+    comment = "Verified against the laboratory notebook."
   ) |>
   finalise_review()
 
@@ -114,7 +130,42 @@ reviewed
 #> 35       35 1582    5                     177                    177
 ```
 
-For a complete introduction, see the **Review Algebra** vignette.
+## Learn more
+
+The package includes two introductory vignettes:
+
+- [The Review
+  Algebra](https://review.dataobservatory.eu/articles/intro.html)
+  introduces the four review verbs and demonstrates a complete review
+  workflow.
+
+- [From Review Algebra to Provenance
+  Modelling](https://review.dataobservatory.eu/articles/prov.html)
+  explains the underlying provenance model and its relationship to the
+  W3C PROV data model.
+
+You can read them by clicking to the links to the package website, or,
+after installing the package, open them with:
+
+``` r
+vignette("review")
+vignette("prov")
+```
+
+## Contributing
+
+Contributions are welcome.
+
+Please read the following documents before submitting pull requests:
+
+- **Contributor Covenant Code of Conduct**
+
+- **Contributing Guidelines** (`CONTRIBUTING.md`)
+
+- **Coding Guidelines** (`CODING-GUIDELINES.md`)
+
+## Project links
 
 - Website: <https://review.dataobservatory.eu/>
+
 - Issues: <https://github.com/dataobservatory-eu/review/issues>

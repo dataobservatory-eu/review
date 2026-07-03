@@ -12,3 +12,7 @@
 ^pkgdown$
 ^doc$
 ^Meta$
+^CODE_OF_CONDUCT\.md$
+^CODING-GUIDELINES\.md$
+^CONTRIBUTING\.md$
+^codemeta\.json$
