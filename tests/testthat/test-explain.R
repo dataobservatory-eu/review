@@ -43,6 +43,6 @@ test_that("explain accepts multiple provenance sources", {
 
   expect_equal(
     unname(attr(reviewed, "prov_used")["review_1"]),
-    "doi:10.5281/zenodo.1234567"
+    "doi:10.5281/zenodo.1234567|https://orcid.org/0000-0001-7513-6760"
   )
 })
