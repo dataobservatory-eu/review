@@ -4,21 +4,57 @@
 \alias{review}
 \title{Initialise a review round}
 \usage{
-review(.data, review_vars, obs_status = NULL)
+review(.data, review_var, obs_status = NULL, label = NULL)
 }
 \arguments{
 \item{.data}{A \code{claims_df}.}
 
-\item{review_vars}{Character vector of variables to review.}
+\item{review_var}{A reviewable variable in \code{.data}.}
 
 \item{obs_status}{Optional observation status assigned to new review
 values.}
+
+\item{label}{Optional human-readable label describing the review task.
+Before review, the label provides instructions to the reviewer.
+After review, it identifies the completed review activity.}
 }
 \value{
 A \code{claims_df} with one additional review round.
 }
 \description{
-Creates a new review round for one or more reviewable variables in a
+Creates a new review round for a reviewable variable in a
 \code{claims_df}. The current review values are copied into new review
 columns placed immediately after their predecessors.
+}
+\details{
+\code{review()} creates a new review round by allocating review columns and
+assigning a human-readable \code{label} describing the intended review task.
+The label serves both as an instruction for reviewers in interactive
+review workflows and as the label of the review activity once the review
+has been completed.
+
+In contrast, \code{explain()} documents how the review activity was carried
+out. It records provenance information such as the activity type, the
+responsible reviewer or software agent, resources used during the review,
+and optional reviewer comments explaining how the task was interpreted or
+why particular review decisions were made.
+
+Together, \code{review()} and \code{explain()} separate the design of a review
+activity from its execution while supporting reproducible review
+workflows.
+}
+\examples{
+claims <- claims_df(
+  Orange,
+  scope_var = "age",
+  subject_var = "Tree"
+)
+
+reviewed <- claims |>
+  review(
+    "circumference",
+    label = "Remeasure the circumference of each tree at the recorded age."
+  )
+
+attr(reviewed, "review_label")
 }
