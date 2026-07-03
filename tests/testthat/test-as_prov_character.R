@@ -1,11 +1,9 @@
 test_that("NULL becomes NA_character_", {
-
   # Missing provenance
   expect_identical(as_prov_character(NULL), NA_character_)
 })
 
 test_that("character vectors are collapsed", {
-
   x <- c("Doe, Jane [rev]", "Eurostat [dtc]")
 
   # Preserve character values
@@ -16,7 +14,6 @@ test_that("character vectors are collapsed", {
 })
 
 test_that("person objects are flattened", {
-
   x <- person("Jane", "Doe", role = "rev")
 
   # Format person
@@ -24,7 +21,6 @@ test_that("person objects are flattened", {
 })
 
 test_that("lists are collapsed", {
-
   x <- list(
     person("Jane", "Doe", role = "rev"),
     "Eurostat [dtc]"
@@ -38,7 +34,6 @@ test_that("lists are collapsed", {
 })
 
 test_that("person comments are preserved", {
-
   x <- person(
     "Jane", "Doe",
     role = "rev",
@@ -53,7 +48,6 @@ test_that("person comments are preserved", {
 })
 
 test_that("lists preserve comments", {
-
   x <- list(
     person(
       "Jane", "Doe",
@@ -75,7 +69,6 @@ test_that("lists preserve comments", {
 })
 
 test_that("vectors of person objects are collapsed", {
-
   x <- c(
     person(
       "Jane", "Doe",

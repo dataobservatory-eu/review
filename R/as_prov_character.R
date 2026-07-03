@@ -8,14 +8,16 @@
 #'
 #' @param x A provenance object.
 #'
+#' @importFrom utils person
 #' @return
 #' A character vector. `NULL` is converted to `NA_character_`.
 #'
 #' @keywords internal
 
 as_prov_character <- function(x) {
-
-  if (is.null(x)) return(NA_character_)
+  if (is.null(x)) {
+    return(NA_character_)
+  }
 
   if (inherits(x, "person") && length(x) == 1) {
     return(as.character(x))
