@@ -45,7 +45,7 @@ claims <- claims_df(
   subject_var = "Tree"
 )
 
-claims
+head(claims, n = 6)
 ```
 
 A `claims_df` separates variables into three structural roles and one or more
@@ -219,7 +219,7 @@ names(reviewed)
 ```
 
 ```{r finalised}
-reviewed
+head(reviewed, 6)
 ```
 
 The complete review algebra therefore consists of four operations: create
