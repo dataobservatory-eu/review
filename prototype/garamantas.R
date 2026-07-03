@@ -1,6 +1,3 @@
-
-
-
 photo_collection <- data.frame(
   resources = c("https://garamantas.lv/en/file/475833",
                 "https://garamantas.lv/en/file/475823",
