@@ -25,7 +25,8 @@ knitr::opts_chunk$set(
 WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 [![devel-version](https://img.shields.io/badge/devel%20version-0.0.2-blue.svg)](https://github.com/dataobservatory-eu/review/tree/devel)
 [![dataobservatory](https://img.shields.io/badge/ecosystem-dataobservatory.eu-3EA135.svg)](https://dataobservatory.eu/)
-
+[![R-CMD-check](https://github.com/dataobservatory-eu/review/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/dataobservatory-eu/review/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/dataobservatory-eu/review/graph/badge.svg)](https://app.codecov.io/gh/dataobservatory-eu/review)
 <!-- badges: end -->
 
 **review** provides a lightweight review algebra for iterative semantic review
