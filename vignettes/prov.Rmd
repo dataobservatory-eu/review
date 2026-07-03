@@ -1,0 +1,93 @@
+---
+title: "From Review Algebra to Provenance Modelling"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{From Review Algebra to Provenance Modelling}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(review)
+```
+
+### Review algebra is implementation-independent
+
+The same review object can be edited by
+
+-  dplyr
+
+-  Excel
+
+-  Shiny
+
+-  OpenRefine
+
+### Review rounds as provenance activities
+
+Show
+
+```         
+candidate ↓ review_1 ↓ review_2
+```
+
+and explain that every review round corresponds to one provenance activity.
+
+### Provenance attributes
+
+For example
+
+```         
+attr(gdp, "prov_activity")  candidate  review_1  review_2 download   impute    forecast
+```
+
+```         
+attr(gdp, "prov_agent")
+```
+
+```         
+attr(gdp, "prov_used")
+```
+
+### Relationship to PROV
+
+Without implementing RDF.
+
+Simply explain
+
+| Review algebra           | PROV           |
+|--------------------------|----------------|
+| candidate/review columns | Entity         |
+| prov_activity            | Activity       |
+| prov_agent               | Agent          |
+| prov_used                | used           |
+| review chain             | wasGeneratedBy |
+
+The important point is
+
+> 
+>
+> The package stores provenance in a lightweight R representation that can later be serialised into PROV or other provenance models.
+
+### Outlook
+
+Mention
+
+-  RDF
+
+-  PROV-O
+
+-  RiC
+
+-  SDMX
+
+-  DataCite
+
+without implementing them.

@@ -1,0 +1,71 @@
+---
+title: "The Review Algebra"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{The Review Algebra}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(review)
+```
+
+## Motivation
+
+Review is a ubiquitous activity in official statistics, digital humanities, archives, machine learning, and data engineering. Existing workflows often rely on spreadsheets or interactive tools that make review difficult to reproduce.
+
+## Claims
+
+Introduce
+
+`claims_df()`
+
+Explain
+
+scope
+subject
+reviewable variables
+## Review rounds
+
+
+Introduce
+
+`review()`
+
+Explain that each review round creates a new semantic version of one or more claims.
+
+Illustrate
+
+```
+candidate
+↓
+review_1
+↓
+review_2
+```
+
+## Explanations
+
+Introduce `explain()`
+
+Explain that it records provenance for the review round rather than modifying data.
+
+## Finalisation
+
+Show
+
+finalise_review()
+
+mapping the reviewed values back into a release.
+
+## Example
+
+The Orange example followed by the Garamantas example.
