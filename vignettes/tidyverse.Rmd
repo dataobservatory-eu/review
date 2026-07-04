@@ -1,8 +1,8 @@
 ---
-title: "tidyverse"
+title: "Review Workflows in the Tidyverse"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{tidyverse}
+  %\VignetteIndexEntry{Review Workflows in the Tidyverse}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
