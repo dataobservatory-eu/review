@@ -2,12 +2,21 @@
 % Please edit documentation in R/explain.R
 \name{explain}
 \alias{explain}
-\title{Explain a review round}
+\title{Explain a review state}
 \usage{
-explain(.data, activity = NULL, agent = NULL, used = NULL, comment = NULL)
+explain(
+  .data,
+  result,
+  activity = NULL,
+  agent = NULL,
+  used = NULL,
+  comment = NULL
+)
 }
 \arguments{
 \item{.data}{A \code{claims_df}.}
+
+\item{result}{Identifier of the review state being explained.}
 
 \item{activity}{Optional type of review activity.}
 
@@ -20,18 +29,18 @@ during the review.}
 task was interpreted or why particular review decisions were made.}
 }
 \value{
-A \code{claims_df} with updated provenance metadata for the most recent
-review round.
+A \code{claims_df} with updated provenance metadata for the specified
+review state.
 }
 \description{
-Records provenance information for the most recently created review
-round in a \code{claims_df}.
+Records provenance information describing how a review state was
+produced.
 }
 \details{
-\code{explain()} documents how a review task was carried out after the
-review has been completed. It complements \code{review()}, which creates
-the review round and assigns a human-readable label describing the
-intended review task.
+\code{explain()} documents how a review activity was carried out after the
+review has been completed. It complements \code{review()}, which creates a
+new review state and optionally assigns a human-readable label
+describing the intended review task.
 
 The recorded provenance may describe the review activity, the person
 or software agent performing the review, evidence or other resources
@@ -47,9 +56,11 @@ reviewed <- claims_df(
 ) |>
   review(
     "circumference",
+    review_id = "remeasured",
     label = "Remeasure the circumference of each tree."
   ) |>
   explain(
+    result = "remeasured",
     activity = "manual_review",
     agent = person("Jane", "Doe", role = "rev"),
     used = "doi:10.5281/zenodo.1234567",

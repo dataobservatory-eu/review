@@ -1,4 +1,5 @@
-test_that("explain records review provenance", {
+test_that("review workflow records provenance", {
+
   reviewed <- claims_df(
     Orange,
     scope_var = "age",
@@ -6,63 +7,53 @@ test_that("explain records review provenance", {
   ) |>
     review(
       "circumference",
+      review_id = "remeasured",
       label = "Remeasure the circumference."
     ) |>
     explain(
+      result = "remeasured",
       activity = "expert review",
       agent = person("Jane", "Doe", role = "rev"),
       used = "lab notebook",
       comment = "Measurements agreed with the original observations."
     )
 
-  # Records the review activity.
   expect_equal(
-    unname(attr(reviewed, "prov_activity")["review_1"]),
-    "expert review"
-  )
-
-  # Records the reviewer.
-  expect_equal(
-    unname(attr(reviewed, "prov_agent")["review_1"]),
-    "Jane Doe [rev]"
-  )
-
-  # Records the evidence used.
-  expect_equal(
-    unname(attr(reviewed, "prov_used")["review_1"]),
-    "lab notebook"
-  )
-
-  # Records reviewer feedback.
-  expect_equal(
-    unname(attr(reviewed, "prov_comment")["review_1"]),
-    "Measurements agreed with the original observations."
-  )
-})
-
-
-test_that("explain accepts multiple provenance sources", {
-  reviewed <- claims_df(
-    Orange,
-    scope_var = "age",
-    subject_var = "Tree"
-  ) |>
-    review("circumference") |>
-    explain(
-      used = c(
-        "doi:10.5281/zenodo.1234567",
-        "https://orcid.org/0000-0001-7513-6760"
-      )
+    attr(reviewed, "prov_activity"),
+    c(
+      candidate = "create",
+      remeasured = "expert review"
     )
+  )
 
-  # Records multiple provenance entities.
   expect_equal(
-    unname(attr(reviewed, "prov_used")["review_1"]),
-    "doi:10.5281/zenodo.1234567|https://orcid.org/0000-0001-7513-6760"
+    attr(reviewed, "prov_agent"),
+    c(
+      candidate = NA_character_,
+      remeasured = "Jane Doe [rev]"
+    )
+  )
+
+  expect_equal(
+    attr(reviewed, "prov_used"),
+    c(
+      candidate = NA_character_,
+      remeasured = "lab notebook"
+    )
+  )
+
+  expect_equal(
+    attr(reviewed, "prov_comment"),
+    c(
+      remeasured =
+        "Measurements agreed with the original observations."
+    )
   )
 })
 
-test_that("review task and reviewer feedback are stored separately", {
+
+test_that("explain records multiple provenance resources", {
+
   reviewed <- claims_df(
     Orange,
     scope_var = "age",
@@ -70,21 +61,82 @@ test_that("review task and reviewer feedback are stored separately", {
   ) |>
     review(
       "circumference",
+      review_id = "remeasured"
+    ) |>
+    explain(
+      result = "remeasured",
+      used = c(
+        "doi:10.5281/zenodo.1234567",
+        "https://orcid.org/0000-0001-7513-6760"
+      )
+    )
+
+  expect_equal(
+    unname(attr(reviewed, "prov_used")["remeasured"]),
+    paste(
+      "doi:10.5281/zenodo.1234567",
+      "https://orcid.org/0000-0001-7513-6760",
+      sep = "|"
+    )
+  )
+})
+
+
+test_that("review instructions and reviewer feedback are stored separately", {
+
+  reviewed <- claims_df(
+    Orange,
+    scope_var = "age",
+    subject_var = "Tree"
+  ) |>
+    review(
+      "circumference",
+      review_id = "remeasured",
       label = "Remeasure the circumference."
     ) |>
     explain(
+      result = "remeasured",
       comment = "Tree 3 required a second measurement."
     )
 
-  # Preserves the review task.
   expect_equal(
-    unname(attr(reviewed, "review_label")["review_1"]),
+    unname(attr(reviewed, "review_label")["remeasured"]),
     "Remeasure the circumference."
   )
 
-  # Records reviewer feedback separately.
   expect_equal(
-    unname(attr(reviewed, "prov_comment")["review_1"]),
+    unname(attr(reviewed, "prov_comment")["remeasured"]),
     "Tree 3 required a second measurement."
+  )
+})
+
+
+test_that("explain updates the requested review state", {
+
+  reviewed <- claims_df(
+    Orange,
+    scope_var = "age",
+    subject_var = "Tree"
+  ) |>
+    review(
+      "circumference",
+      review_id = "remeasured"
+    ) |>
+    review(
+      "circumference_remeasured",
+      review_id = "reviewed"
+    ) |>
+    explain(
+      result = "remeasured",
+      activity = "measurement"
+    )
+
+  expect_equal(
+    unname(attr(reviewed, "prov_activity")["remeasured"]),
+    "measurement"
+  )
+
+  expect_true(
+    is.na(attr(reviewed, "prov_activity")["reviewed"])
   )
 })

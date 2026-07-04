@@ -1,13 +1,13 @@
-#' Explain a review round
+#' Explain a review state
 #'
-#' Records provenance information for the most recently created review
-#' round in a `claims_df`.
+#' Records provenance information describing how a review state was
+#' produced.
 #'
 #' @details
-#' `explain()` documents how a review task was carried out after the
-#' review has been completed. It complements `review()`, which creates
-#' the review round and assigns a human-readable label describing the
-#' intended review task.
+#' `explain()` documents how a review activity was carried out after the
+#' review has been completed. It complements `review()`, which creates a
+#' new review state and optionally assigns a human-readable label
+#' describing the intended review task.
 #'
 #' The recorded provenance may describe the review activity, the person
 #' or software agent performing the review, evidence or other resources
@@ -16,6 +16,7 @@
 #' were made.
 #'
 #' @param .data A `claims_df`.
+#' @param result Identifier of the review state being explained.
 #' @param activity Optional type of review activity.
 #' @param agent Optional person or software agent carrying out the review.
 #' @param used Optional evidence, source or other provenance entity used
@@ -24,8 +25,8 @@
 #'   task was interpreted or why particular review decisions were made.
 #'
 #' @return
-#' A `claims_df` with updated provenance metadata for the most recent
-#' review round.
+#' A `claims_df` with updated provenance metadata for the specified
+#' review state.
 #'
 #' @examples
 #' reviewed <- claims_df(
@@ -35,9 +36,11 @@
 #' ) |>
 #'   review(
 #'     "circumference",
+#'     review_id = "remeasured",
 #'     label = "Remeasure the circumference of each tree."
 #'   ) |>
 #'   explain(
+#'     result = "remeasured",
 #'     activity = "manual_review",
 #'     agent = person("Jane", "Doe", role = "rev"),
 #'     used = "doi:10.5281/zenodo.1234567",
@@ -52,41 +55,55 @@
 #' @importFrom utils tail
 #' @export
 explain <- function(
-  .data,
-  activity = NULL,
-  agent = NULL,
-  used = NULL,
-  comment = NULL
+    .data,
+    result,
+    activity = NULL,
+    agent = NULL,
+    used = NULL,
+    comment = NULL
 ) {
   if (!inherits(.data, "claims_df")) {
     stop(".data must be created with claims_df()", call. = FALSE)
   }
 
-  ## Cache provenance metadata ----------------------------------------
+  ## Validate review state --------------------------------------------
 
-  review_id <- utils::tail(attr(.data, "prov_id"), 1)
+  prov_id <- attr(.data, "prov_id")
+
+  if (!result %in% prov_id) {
+    stop("Unknown review state: ", result, call. = FALSE)
+  }
+
+  ## Cache provenance metadata ----------------------------------------
 
   prov_activity <- attr(.data, "prov_activity")
   prov_agent <- attr(.data, "prov_agent")
   prov_used <- attr(.data, "prov_used")
   prov_comment <- attr(.data, "prov_comment")
 
+  if (is.null(prov_comment)) {
+    prov_comment <- stats::setNames(
+      rep(NA_character_, length(prov_id)),
+      prov_id
+    )
+  }
+
   ## Record review provenance -----------------------------------------
 
   if (!is.null(activity)) {
-    prov_activity[review_id] <- activity
+    prov_activity[result] <- activity
   }
 
   if (!is.null(agent)) {
-    prov_agent[review_id] <- as_prov_character(agent)
+    prov_agent[result] <- as_prov_character(agent)
   }
 
   if (!is.null(used)) {
-    prov_used[review_id] <- as_prov_character(used)
+    prov_used[result] <- as_prov_character(used)
   }
 
   if (!is.null(comment)) {
-    prov_comment[review_id] <- comment
+    prov_comment[result] <- comment
   }
 
   ## Restore provenance metadata --------------------------------------
