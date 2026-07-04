@@ -9,15 +9,14 @@
 #'
 #' @export
 revisions <- function(
-    .data,
-    scope_var,
-    subject_var,
-    id_var = NULL,
-    prov_activity = "create",
-    prov_agent = NULL,
-    prov_used = NULL
+  .data,
+  scope_var,
+  subject_var,
+  id_var = NULL,
+  prov_activity = "create",
+  prov_agent = NULL,
+  prov_used = NULL
 ) {
-
   claims_df(
     .data = .data,
     scope_var = scope_var,

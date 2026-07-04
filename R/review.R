@@ -6,22 +6,22 @@
 #'
 #' @details
 #' `review()` creates a new review state by allocating a new review column.
-#' If `review_id` is supplied, it is used as the suffix of the new review column.
-#' Otherwise the review sequence number is used. It is also possible to assign
-#' a human-readable `label` describing the intended review task.
-#' The label serves both as an instruction for reviewers in interactive
-#' review workflows and as the label of the review activity once the review
-#' has been completed.
+#' If `review_id` is supplied, it is used as the suffix of the new review
+#' column. Otherwise, the review sequence number is used. It is also
+#' possible to assign a human-readable `label` describing the intended
+#' review task. The label serves both as an instruction for reviewers
+#' during interactive review workflows and as a description of the review
+#' activity once the review has been completed.
 #'
-#' In contrast, `explain()` documents how the review activity was carried
-#' out. It records provenance information such as the activity type, the
-#' responsible reviewer or software agent, resources used during the review,
-#' and optional reviewer comments explaining how the task was interpreted or
+#' In contrast, `document()` records provenance describing how a revision
+#' was produced. It records information such as the review activity, the
+#' responsible reviewer or software agent, supporting resources, and
+#' optional reviewer comments explaining how the task was interpreted or
 #' why particular review decisions were made.
 #'
-#' Together, `review()` and `explain()` separate the design of a review
-#' activity from its execution while supporting reproducible review
-#' workflows.
+#' Together, `review()` and `document()` separate the definition of a
+#' review task from the documentation of its execution, supporting
+#' reproducible, explainable, and auditable review workflows.
 #'
 #' @param .data A `claims_df`.
 #' @param review_var Character scalar identifying the current review state.
@@ -172,8 +172,8 @@ review <- function(
 
   attr(.data, "reviewable") <- reviewable
 
-  attr(.data, "prov_id") <- c(prov_id, review_id)
-  empty <- stats::setNames(NA_character_, review_id)
+  attr(.data, "prov_id") <- c(prov_id, review_column)
+  empty <- stats::setNames(NA_character_, review_column)
 
   attr(.data, "prov_activity") <- c(prov_activity, empty)
   attr(.data, "prov_agent") <- c(prov_agent, empty)

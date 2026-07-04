@@ -93,7 +93,7 @@ test_that("review allocates provenance metadata", {
 
   expect_equal(
     attr(reviewed, "prov_id"),
-    c("candidate", "remeasured")
+    c("candidate", "circumference_remeasured")
   )
 
   expect_equal(

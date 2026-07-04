@@ -27,12 +27,11 @@
 #'
 #' @export
 approve <- function(
-    .data,
-    activity = "approval",
-    agent = NULL,
-    comment = NULL
+  .data,
+  activity = "approval",
+  agent = NULL,
+  comment = NULL
 ) {
-
   if (!inherits(.data, "claims_df")) {
     stop(".data must be created with claims_df()", call. = FALSE)
   }
@@ -46,7 +45,6 @@ approve <- function(
   ## Create approved states -------------------------------------------
 
   for (var in reviewable) {
-
     revision <- paste0(var, "_", latest)
     approved <- paste0(var, "_approved")
 

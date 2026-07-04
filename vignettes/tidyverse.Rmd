@@ -19,45 +19,22 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(review)
+library(dplyr)
 ```
 
-The `review` package offers a dual extension of the tidyverse data model for
-iterative semantic review of tabular data. In the introductory vignette, [The
-Review Algebra](https://review.dataobservatory.eu/articles/intro.html), we
-introduce the four verbs that support semantic review. The second vignette,
-[From Review Algebra to Provenance
-Modelling](https://review.dataobservatory.eu/articles/prov.html), explained how
-review rounds can be interpreted as lightweight provenance activities.
+The `review` package offers a dual extension of the tidyverse data model for iterative semantic review of tabular data. In the introductory vignette, [The Review Algebra](https://review.dataobservatory.eu/articles/intro.html), we
+introduce the four verbs that support semantic review. The second vignette, [From Review Algebra to Provenance Modelling](https://review.dataobservatory.eu/articles/prov.html), explained how review rounds can be interpreted as lightweight provenance activities.
 
-This vignette focuses on how the review algebra fits naturally into ordinary tidyverse workflows. The package extends ordinary tidy workflows with review states and provenance while preserving compatibility with familiar data-frame
-operations. The tidyverse provides an elegant relational algebra for
-transforming data frames. Following the principles of tidy data, observations,
-dimensions and attributes are represented explicitly, while many analytical
-assumptions, quality judgements and review decisions remain implicit in the
-analyst's workflow. During interactive data analysis this is often exactly the
-right design.
+This vignette shows how the review algebra integrates naturally into ordinary tidyverse workflows. The package extends tidy workflows with review states and provenance while preserving compatibility with familiar data-frame operations. The tidyverse provides an elegant relational algebra for transforming data frames. Following the principles of tidy data, observations,
+dimensions and attributes are represented explicitly, while many analytical assumptions, quality judgements and review decisions remain implicit in the analyst's workflow. During interactive data analysis this is often exactly the right design.
 
-However, once data leave the analyst's workspace, those implicit decisions
-become difficult for others to inspect or reproduce. This is particularly
-important when review involves external collaborators, domain experts,
-statistical production pipelines, or released datasets that should satisfy the
-FAIR principles of reusability and reproducibility.
+However, once data leave the analyst's workspace, those implicit decisions become difficult for others to inspect or reproduce. This is particularly important when review involves external collaborators, domain experts, statistical production pipelines, or released datasets that should satisfy the FAIR principles of reusability and reproducibility.
 
-Several packages attempt to bridge this gap by serialising data together with
-metadata. In practice, however, separating data from their metadata often
-creates another maintenance problem: unless both are updated together, they
-gradually drift apart.
+Several packages attempt to bridge this gap by serialising data together with metadata. In practice, however, separating data from their metadata often creates another maintenance problem: unless both are updated together, they gradually drift apart.
 
-The review package takes a different approach. Rather than introducing a new
-data representation, it extends ordinary tidyverse data frames with a
-lightweight review layer that remains attached to the data throughout the
-workflow. Review rounds, reviewer annotations and provenance therefore travel
-with the data, while the object continues to behave like a familiar tidy data
-frame.
+The `review` package takes a different approach. Rather than introducing a new data representation, it extends ordinary tidyverse data frames with a lightweight review layer that remains attached to the data throughout the workflow. Review rounds, reviewer annotations and provenance therefore travel with the data, while the object continues to behave like a familiar tidy data frame.
 
-This design aims to bridge the gap between interactive data analysis and the
-exchange of reviewable, reproducible and trustworthy data without requiring
-users to abandon existing tidyverse workflows.
+This design aims to bridge the gap between interactive data analysis and the exchange of reviewable, reproducible and trustworthy data without requiring users to abandon existing tidyverse workflows.
 
 ## Review as a pause in a tidy workflow
 
@@ -66,9 +43,9 @@ In many real workflows, however, this is not enough. A value may need to be
 checked by a human reviewer, reconciled in another tool, or returned from an
 external process before the workflow can continue.
 
-The `review` package adds this missing in-between state.
+The `review` package introduces this missing review state.
 
-```
+```text
 <text, observation>
       ↓
      data
@@ -79,14 +56,14 @@ The `review` package adds this missing in-between state.
       ↓
 < external review >
       ↓
-  explain()
+  document()
       ↓
-   accept()
+   approve()
 ```
 
-`review()` does not perform the review. It allocates a review column and allows the workflow to pause.
+`review()` does not perform the review itself. It allocates a review column and allows the workflow to pause.
 
-```{r}
+```{r revisions}
 claims <- revisions(
   Orange,
   scope_var = "age",
@@ -96,27 +73,27 @@ claims <- revisions(
 reviewed <- claims |>
   review(
     "circumference",
+    review_id = "remeasure",
     label = "Check the circumference values."
   )
 
 names(reviewed)
 ```
 
-The reviewer may now edit the allocated review column. This can happen in many ways: in R (either via an interactive data entry on the consol, or via a mutation of the assigned review column), in a spreadsheet, in OpenRefine, in Shiny, or in another external process.
+The reviewer may now edit the allocated review column. This can happen in many ways: in R (either via an interactive data entry on the console, or via a mutation of the assigned review column), in a spreadsheet, in OpenRefine, in Shiny, or in another external process.
 
 ## Review with mutate
 
 A review can be expressed as an ordinary `mutate()` step when the review decision is reproducible in code.
 
 ```{r mutatereview}
-library(dplyr)
 reviewed <- reviewed |>
   dplyr::mutate(
-    circumference_review_1 =
+    circumference_remeasure =
       dplyr::if_else(
         claim_id == 1,
         31,
-        circumference_review_1
+        circumference_remeasure
       )
   )
 ```
@@ -125,24 +102,23 @@ The review round can then be documented.
 
 ```{r mutateexplain}
 reviewed <- reviewed |>
-  explain(
-    activity = "coded correction",
-    agent = "dplyr::mutate()",
+  document(
+    revision = "circumference_remeasure",
+    activity = "remeasured",
+    agent = utils::person("Jane", "Doe", role = "dtc"),
     comment = "First circumference value corrected in code."
   )
 ```
 
 ## Review with an external file
 
-A review may also leave R entirely. For example, the allocated review column can
-be written to a temporary CSV file, edited elsewhere, and read back into the
-same review object.
+A review may also leave R entirely. For example, the allocated review column can be written to a temporary CSV file, edited elsewhere, and read back into the same review object.
 
 ```{r extfilereview}
 review_file <- tempfile(fileext = ".csv")
 
 write.csv(
-  reviewed[c("claim_id", "circumference_review_1")],
+  reviewed[c("claim_id", "circumference_remeasure")],
   review_file,
   row.names = FALSE
 )
@@ -153,9 +129,12 @@ curation tool. Here we simulate the edited file.
 
 ```{r extfilereview2}
 external_review <- read.csv(review_file)
-external_review$circumference_review_1[2] <- 34
+
+# Modify the circumference
+external_review$circumference_remeasure[2] <- 34
 write.csv(external_review, review_file, row.names = FALSE)
 
+# Re-read
 external_review <- read.csv(review_file)
 ```
 
@@ -163,20 +142,20 @@ The reviewed values are then joined back by the claim identifier.
 
 ```{r relocate}
 reviewed <- reviewed |>
-  select(-circumference_review_1) |>
+  select(-circumference_remeasure) |>
   left_join(external_review, by = "claim_id") |>
   relocate(
-    circumference_review_1,
+    circumference_remeasure,
     .after = circumference_candidate
   )
 ```
 
-The same review round can still be explained.
+The review can then be documented in exactly the same way.
 
 ```{r spreadsheet}
 reviewed <- reviewed |>
-  explain(
-    activity = "spreadsheet review",
+  document(
+    revision = "circumference_remeasure",
     agent = person("Jane", "Doe", role = "rev"),
     used = review_file,
     comment = "Reviewed values were read back from a CSV file."
@@ -187,18 +166,15 @@ reviewed <- reviewed |>
 
 For small examples, review can also be interactive. A reviewer can inspect the object and overwrite one or more values directly.
 
-```{r}
-reviewed$circumference_review_1[3] <- 37
+```{r interactivereview}
+reviewed$circumference_remeasure[3] <- 37
 ```
 
-This is not less valid than a spreadsheet or a pipeline. What matters is that the reviewed value is stored in the allocated review column and the review is documented with `explain()`.
+This is not less valid than a spreadsheet or a pipeline. What matters is that the revised value is stored in the allocated review column and the review is documented with `document()`.
 
 ## Scope of the review
 
-The review algebra works best on single vectors. In this case, the review is a
-row-by-row revision of the validity of some claim on a variable. Technically, it
-would be possible to review several variables at one time, which would mean the
-revision of interactions.
+The review algebra works best on single vectors. In this case, the review is a row-by-row revision of the validity of some claim on a variable. Technically, it would be possible to review several variables at one time, which would mean the revision of interactions.
 
 ```{r varscope}
 data.frame(
@@ -207,89 +183,81 @@ data.frame(
   author = c("Jane Doe", "Alice Cooper"),
   year = c("2026", "2021")
 ) %>%
-  revisions(scope_var = "rowid", subject_var = "title")
+  revisions(
+    scope_var = "rowid",
+    subject_var = "title"
+  )
 ```
 
 ```{r}
 library(dplyr)
-
-data.frame(
+bibliography_df <- data.frame(
   rowid = c(1, 2),
   title = c("Semantics", "Revisions"),
-  author_year = c("Jane Doe 2026", "Alice Cooper 2021")
+  bibliography = c("Jane Doe 2026", "Alice Cooper 2021")
 ) |>
   revisions(scope_var = "rowid", subject_var = "title") |>
   review(
-    review_var = "author_year",
+    review_var = "bibliography",
+    review_id = "author_year",
     label = "Check the author and year of the articles"
   ) |>
-  dplyr::mutate(author_year_review_1 = ifelse(
-    test = author_year_review_1 == "Alice Cooper 2021",
-    yes = "Alice Cooper 2022",
-    no = author_year_review_1
-  )) |>
-  explain(
-    activity = "bibliography check",
+  dplyr::mutate(
+    bibliography_author_year = ifelse(
+      test = bibliography_author_year == "Alice Cooper 2021",
+      yes = "Alice Cooper 2022",
+      no = bibliography_author_year
+    )
+  ) |>
+  document(
+    revision = "bibliography_author_year",
     agent = person("Librarian"),
     comment = "Alice Cooper seems to published only in 2022"
   )
+
+bibliography_df
 ```
 
 ## Finalising the review
 
-Once the reviewed values are accepted, `accept()` promotes the current
-review values back into the candidate columns.
+Once the reviewed values are approved, `approve()` promotes the current review values back into the candidate columns.
 
 ```{r}
-accepted <- reviewed |>
-  accept()
+approved <- bibliography_df |>
+  approve(agent = utils::person("Joe", "Doe", role = "rev"))
 
-accepted$circumference_candidate[1:3]
+approved$bibliography_author_year
 ```
 
 The review history is preserved.
 
 ```{r}
-names(accepted)
-attr(accepted, "prov_activity")
-attr(accepted, "prov_agent")
-attr(accepted, "prov_comment")
+names(approved)
+attr(approved, "prov_agent")
+attr(approved, "prov_comment")
+attr(approved, "approval_agent")
 ```
 
 ## A tidy annotation layer
 
-The review algebra is designed to remain close to ordinary data-frame workflows.
-It does not replace `dplyr`; it adds review state, provenance, and review
-history around transformations that can still be inspected with ordinary R
-tools.
+The review algebra is designed to remain close to ordinary data-frame workflows. It does not replace `dplyr`; it adds review state, provenance, and review history around transformations that can still be inspected with ordinary R tools.
 
-This makes `review` similar in spirit to `dataset_df`: it adds a semantic layer
-while remaining compatible with the tidyverse data-frame model. The larger
-design idea is not to replace tidy data, but to make the assumptions and review
-decisions around tidy data more explicit.
+This makes `review` similar in spirit to `dataset_df`: it adds a semantic layer while remaining compatible with the tidyverse data-frame model. The larger design idea is not to replace tidy data, but to make the assumptions and review decisions around tidy data more explicit.
 
 This works best for vector-wise transformations such as `mutate()`,
 `transmute()`, `filter()`, `select()`, `relocate()`, `fill()`.
 
-Operations that collapse or reshape the data, such as `summarise()` or some
-`pivot_*()` workflows, may change the identity of claims and therefore need more
-explicit handling.
+Operations that collapse or reshape the data, such as `summarise()` or some `pivot_*()` workflows, may change the identity of claims and therefore need more explicit handling.
+
+A future release is expected to implement the `dplyr::explain()` generic for `review` objects, providing human-readable summaries of review workflows and their recorded provenance.
 
 ## Conclusion
 
-The `tidyverse` already provides an algebra that is frequently used to construct
-inference workflows. Data are filtered, reconciled, joined, transformed,
-aggregated, and enriched to derive new semantic statements. These inference
-steps are often deterministic, but their meaning and justification remain
-largely implicit in the analysis code and the analyst's expertise.
+The `tidyverse` already provides an algebra that is frequently used to construct inference workflows. Data are filtered, reconciled, joined, transformed, aggregated, and enriched to derive new semantic statements. These inference steps are often deterministic, but their meaning and justification remain largely implicit in the analysis code and the analyst's expertise.
 
-The \`review\` package introduces a dual extension of the tidy algebra that
-makes one class of these semantic transformations—human review—explicit. Rather
-than merely producing a new data frame, it records the semantic states of
-reviewable variables together with the provenance of the transformations that
-produced them.
+The `review` package introduces a dual extension of the tidy algebra that makes one class of these semantic transformations—human review—explicit. Rather than merely producing a new data frame, it records the semantic states of reviewable variables together with the provenance of the transformations that produced them.
 
-Human review is only the first application of this dual algebra. The same
+Human review is only the first application of this dual algebra. The same 
 computational model naturally extends to semantic inference. Rule-based
 reasoning, statistical imputation, authority reconciliation, ontology alignment,
 and AI-assisted annotation all produce successive semantic states that can be

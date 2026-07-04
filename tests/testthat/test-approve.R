@@ -1,5 +1,4 @@
 test_that("approve creates approved variables", {
-
   approved <- claims_df(
     Orange,
     scope_var = "age",
@@ -16,7 +15,6 @@ test_that("approve creates approved variables", {
 
 
 test_that("approve copies the latest revision", {
-
   reviewed <- claims_df(
     Orange,
     scope_var = "age",
@@ -39,7 +37,6 @@ test_that("approve copies the latest revision", {
 
 
 test_that("approve preserves review history", {
-
   approved <- claims_df(
     Orange,
     scope_var = "age",
@@ -56,7 +53,6 @@ test_that("approve preserves review history", {
 
 
 test_that("approve returns a reviewed_df", {
-
   approved <- claims_df(
     Orange,
     scope_var = "age",
@@ -72,14 +68,13 @@ test_that("approve returns a reviewed_df", {
 
 
 test_that("approve preserves review provenance", {
-
   reviewed <- claims_df(
     Orange,
     scope_var = "age",
     subject_var = "Tree"
   ) |>
     review("circumference", review_id = "remeasured") |>
-    explain(
+    document(
       revision = "circumference_remeasured",
       activity = "manual review",
       agent = person("Jane", "Doe", role = "dtc"),
@@ -99,7 +94,6 @@ test_that("approve preserves review provenance", {
 
 
 test_that("approve records approval provenance", {
-
   approved <- claims_df(
     Orange,
     scope_var = "age",
@@ -120,7 +114,6 @@ test_that("approve records approval provenance", {
 
 
 test_that("approve rejects non-claims_df input", {
-
   # Rejects ordinary data frames.
   expect_error(
     approve(Orange),

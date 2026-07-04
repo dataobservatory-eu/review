@@ -76,7 +76,7 @@ claims |>
 
 creates a review round labelled *"Remeasure the circumference of each tree."* Before the review takes place, this label serves as a task description for the reviewer. Once the review has been completed, the same label identifies the corresponding review activity.
 
-After the review has been carried out, `explain()` records how that activity was performed:
+After the review has been carried out, `document()` records how that activity was performed:
 
 - the review activity;
 
@@ -86,7 +86,7 @@ After the review has been carried out, `explain()` records how that activity was
 
 - optional reviewer comments explaining how the task was interpreted or why particular review decisions were made.
 
-This deliberately separates **prescription** from **documentation**. `review()` defines what should be reviewed, whereas `explain()` records what actually happened.
+This deliberately separates **prescription** from **documentation**. `review()` defines what should be reviewed, whereas `document()` records what actually happened.
 
 This distinction aligns naturally with the concepts of the [W3C Provenance Data Model](https://www.w3.org/TR/prov-overview/)(PROV), which has an ontological form ([PROV-O](https://www.w3.org/TR/2013/REC-prov-o-20130430/)) and can be used to serialise the provenance that the `review` package records. Each review round corresponds to a provenance activity. The review label can be understood as a human-readable label for that activity, while reviewer comments provide additional documentation describing how the activity was carried out. In RDF serialisations, these naturally correspond to [rdfs:label](https://www.w3.org/TR/rdf-schema/#ch_label) and [rdfs:comment](https://www.w3.org/TR/rdf-schema/#ch_comment) associated with a [`prov:Activity`](https://www.w3.org/TR/2013/REC-prov-o-20130430/#Activity).
 
@@ -100,8 +100,9 @@ For example,
 
 ```{r prov_activity}
 claims <- claims |>
-  explain(
-    activity = "manual review",
+  document(
+    revision = "circumference_1",
+    activity = "remeasurement",
     agent = person("Jane", "Doe", role = "rev"),
     used = "doi:10.5281/zenodo.1234567",
     comment = "Verified against the laboratory notebook."

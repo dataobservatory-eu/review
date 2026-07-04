@@ -1,5 +1,4 @@
 test_that("revisions creates a claims_df", {
-
   reviewed <- revisions(
     Orange,
     scope_var = "age",

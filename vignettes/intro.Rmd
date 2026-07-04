@@ -40,8 +40,8 @@ The review package provides four verbs for reproducible semantic review:
 
 - `claims_df()` creates reviewable claims.
 - `review()` allocates a review round and labels the intended review task.
-- `explain()` records how the review was carried out.
-- `accept()` accepts the reviewed values as the current candidate claims while
+- `document()` records how the review was carried out.
+- `approve()` approves the reviewed values as the current candidate claims while
   preserving the complete review history.
 
 ```{r claims_df}
@@ -94,6 +94,7 @@ review activity.
 reviewed <- claims |>
   review(
     "circumference",
+    review_id = "remeasure",
     label = "Remeasure the circumference of each tree."
   )
 
@@ -124,8 +125,8 @@ Once the review values have been entered, the review round can be documented.
 
 ```{r explain1}
 reviewed <- reviewed |>
-  explain(
-    activity = "manual review",
+  document(
+    revision = "circumference_remeasure",
     agent = person("Jane", "Doe", role = "rev"),
     used = "doi:10.5281/zenodo.1234567",
     comment = "Verified against the laboratory notebook."
@@ -134,7 +135,7 @@ reviewed <- reviewed |>
 attr(reviewed, "prov_comment")
 ```
 
-`explain()` records how the review was performed, who performed it, which
+`document()` records how the review was performed, who performed it, which
 evidence or resources informed the review, and optional reviewer comments
 documenting how the review task was interpreted or why particular decisions were
 made.
@@ -156,7 +157,7 @@ separating reviewed values from the provenance of the review, it records which
 what **entities** (datasets, publications, files, or other resources) informed
 those decisions.
 
-`review()` and `explain()` deliberately separate the description of a review
+`review()` and `document()` deliberately separate the description of a review
 task from the documentation of its execution.
 
 - A review **label** describes what reviewers are asked to do. It therefore
@@ -190,32 +191,36 @@ claims <- claims_df(
   scope_var = "age",
   subject_var = "Tree"
 ) |>
-  review("circumference")
+  review("circumference",
+    review_id = "remeasure"
+  )
 
-claims$circumference_review_1[1] <- 31
+claims$circumference_remeasure[1] <- 31
 
 claims <- claims |>
-  explain(
-    activity = "manual review",
+  document(
+    revision = "circumference_remeasure",
     agent = person("Jane", "Doe", role = "rev"),
     used = "doi:10.5281/zenodo.1234567"
   ) |>
-  review("circumference")
+  review("circumference",
+    review_id = "OpenRefine"
+  )
 
-claims$circumference_review_2[1] <- 32
+claims$circumference_OpenRefine[1] <- 32
 claims <- claims |>
-  explain(
-    activity = "quality assurance",
-    agent = "OpenRefine 3.10",
+  document(
+    revision = "circumference_OpenRefine",
+    agent = utils::person("Joe", "Doe", role = "ctb"),
     used = "doi:10.2908/NAMA_10_GDP"
   ) |>
-  accept()
+  approve()
 ```
 
 ## Adding subsequent rounds of review
 
 Each review round is allocated from the current candidate values. After
-`accept()`, those candidate values become the accepted result of the previous
+`approve()`, those candidate values become the approved result of the previous
 review, allowing further review rounds to continue from the updated claims.
 
 Consider this second-round review:
@@ -236,8 +241,8 @@ evidence can therefore contribute to successive stages of the review.
 
 ```{r explain2}
 reviewed <- reviewed |>
-  explain(
-    activity = "quality assurance",
+  document(
+    revision = "circumference_review_2",
     agent = "OpenRefine 3.10",
     used = "doi:10.2908/NAMA_10_GDP"
   )
@@ -261,19 +266,19 @@ to continue from the released version while preserving the complete review
 trail.
 
 ```{r finalise}
-reviewed <- reviewed |>
-  accept()
+approved <- reviewed |>
+  approve(agent = utils::person("Joe", "Doe", role = "rev"))
 ```
 
 The review history is preserved, while future review rounds begin from the
 finalised candidate values.
 
-```{r names-finalised}
-names(reviewed)
+```{r names-approved}
+names(approved)
 ```
 
-```{r finalised}
-head(reviewed, 6)
+```{r approved}
+head(approved, 6)
 ```
 
 The complete review algebra therefore consists of four operations: create
@@ -442,7 +447,7 @@ garamantas_claims <- revisions(
 ) |>
   review(c("depicts"))
 
-garamantas_claims$depicts_review_1[2] <- "group of people"
+garamantas_claims$depicts_1[2] <- "group of people"
 ```
 
 Although the domain differs, the review algebra remains unchanged:
@@ -452,21 +457,21 @@ revisions()
    ↓
 review()
    ↓
-explain()
+document()
    ↓
-accept()
+approve()
    ↓
 next_revisions()
 ```
 
 ```{r showgaramatas}
 garamantas_reviewed <- garamantas_claims |>
-  explain(
-    activity = "expert review",
+  document(
+    revision = "depicts_1",
     agent = person("Alice", "Curator", role = "rev"),
     used = "doi:example001"
   ) |>
-  accept()
+  approve()
 
 print(garamantas_reviewed)
 
@@ -497,8 +502,8 @@ Observation layer
             ▼
       Semantic stabilisation
       review()
-      explain()
-      accept()
+      document()
+      approve()
             │
             ▼
      Stable semantic object

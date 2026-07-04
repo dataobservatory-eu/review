@@ -13,5 +13,5 @@ next_revisions(.data)
 A \code{claims_df}.
 }
 \description{
-Creates a new review workspace from an accepted review.
+Creates a new review workspace from an approved review.
 }

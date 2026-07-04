@@ -1,5 +1,4 @@
 test_that("next_revisions starts a new review cycle", {
-
   next_review <- revisions(
     Orange,
     scope_var = "age",
@@ -9,7 +8,7 @@ test_that("next_revisions starts a new review cycle", {
       "circumference",
       review_id = "remeasured"
     ) |>
-    accept() |>
+    approve() |>
     next_revisions()
 
   expect_s3_class(next_review, "claims_df")
