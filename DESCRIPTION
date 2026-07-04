@@ -8,16 +8,19 @@ Authors@R:
            email = "daniel.antal@dataobservatory.eu", 
            role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-7513-6760"))
-Description: Provides a tidy relational algebra for iterative semantic review of
-   tabular data. The package provides a vectorised, tidy review workspace for 
-   creating, reviewing, explaining, and finalising semantic claims. Rather than
-   prescribing how reviews are carried out, it supports reproducible review 
-   workflows that remain compatible with ordinary data frames and external 
-   tools such as spreadsheets, databases, and interactive review interfaces. 
-   Although it is not an ontology toolkit, its design is informed by 
-   provenance, policy, and statistical quality-control models, allowing review 
-   histories to be audited, serialised, and compared with explicit 
-   review expectations.
+Description:  Provides a tidy relational algebra and a dual extension of the 
+   tidyverse data model for iterative semantic review of tabular data. 
+   The package provides a vectorised review workspace for creating, reviewing,
+   documenting, and finalising semantic claims while remaining compatible
+   with ordinary data frames. Rather than prescribing how reviews are
+   carried out, it supports reproducible review workflows that integrate
+   naturally with external tools such as spreadsheets, databases, and
+   interactive review interfaces. Although it is not an ontology toolkit,
+   its design is informed by provenance, policy, and statistical
+   quality-control models, allowing review histories to be audited,
+   serialised, compared with expected review activities, and exchanged in a
+   reproducible form.
+
 License: MIT + file LICENSE
 Encoding: UTF-8
 URL: https://review.dataobservatory.eu/,

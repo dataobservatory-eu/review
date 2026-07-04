@@ -23,9 +23,16 @@ library(review)
 
 ## Motivation
 
-Many data workflows require human review before publication. Official statistics, digital humanities, archives, machine learning, and data engineering all rely on iterative assessment of candidate values before they become part of a released dataset.
+Many data workflows require human review before publication. Official
+statistics, digital humanities, archives, machine learning, and data engineering
+all rely on iterative assessment of candidate values before they become part of
+a released dataset.
 
-The goal of **review** is to make semantic review explicit and reproducible. Rather than overwriting existing values, each review round creates a new version of one or more reviewable claims while preserving the previous versions and their provenance. This review history can be inspected, reproduced, and extended with additional review rounds.
+The goal of **review** is to make semantic review explicit and reproducible.
+Rather than overwriting existing values, each review round creates a new version
+of one or more reviewable claims while preserving the previous versions and
+their provenance. This review history can be inspected, reproduced, and extended
+with additional review rounds.
 
 ## Creating reviewable claims
 
@@ -59,7 +66,13 @@ reviewable variables.
 The structural variables remain stable throughout the review process, while
 reviewable variables may acquire successive reviewed versions.
 
-Readers familiar with the tidy data principles will recognise this separation. Structural variables play a role analogous to identifiers, dimensions, and attributes in statistical data production, while the reviewable variables correspond to measured values that are iteratively reviewed and improved. The structural variables provide the context for interpretation and allow claims to be grouped, filtered, or compared, whereas the reviewable variables capture the semantic content that evolves during the review process.
+Readers familiar with the tidy data principles will recognise this separation.
+Structural variables play a role analogous to identifiers, dimensions, and
+attributes in statistical data production, while the reviewable variables
+correspond to measured values that are iteratively reviewed and improved. The
+structural variables provide the context for interpretation and allow claims to
+be grouped, filtered, or compared, whereas the reviewable variables capture the
+semantic content that evolves during the review process.
 
 ```{r names}
 names(claims)
@@ -120,15 +133,27 @@ reviewed <- reviewed |>
 attr(reviewed, "prov_comment")
 ```
 
-`explain()` records how the review was performed, who performed it, which evidence or resources informed the review, and optional reviewer comments documenting how the review task was interpreted or why particular decisions were made.
+`explain()` records how the review was performed, who performed it, which
+evidence or resources informed the review, and optional reviewer comments
+documenting how the review task was interpreted or why particular decisions were
+made.
 
-Provenance is stored separately from the reviewed values, allowing the same review data to be interpreted or exported in different provenance models.
+Provenance is stored separately from the reviewed values, allowing the same
+review data to be interpreted or exported in different provenance models.
 
-Readers familiar with FAIR data principles, reproducible research, or statistical and digital heritage workflows may recognise a common problem: as data are cleaned, harmonised, and reviewed, an increasing share of the knowledge about *why* particular decisions were made remains only in the analyst's or curator's head. The resulting datasets may be reusable, but the review process itself is often difficult to inspect, reproduce, or audit.
+Readers familiar with FAIR data principles, reproducible research, or
+statistical and digital heritage workflows may recognise a common problem: as
+data are cleaned, harmonised, and reviewed, an increasing share of the knowledge
+about *why* particular decisions were made remains only in the analyst's or
+curator's head. The resulting datasets may be reusable, but the review process
+itself is often difficult to inspect, reproduce, or audit.
 
-The review algebra aims to record as much of this review history as 
-possible while requiring as little additional documentation effort as possible. By separating reviewed values from the provenance of the review, it records which **agents** (people, software, or AI models) performed which **activities**, and what **entities** (datasets, publications,
-files, or other resources) informed those decisions.
+The review algebra aims to record as much of this review history as possible
+while requiring as little additional documentation effort as possible. By
+separating reviewed values from the provenance of the review, it records which
+**agents** (people, software, or AI models) performed which **activities**, and
+what **entities** (datasets, publications, files, or other resources) informed
+those decisions.
 
 `review()` and `explain()` deliberately separate the description of a review
 task from the documentation of its execution.
@@ -140,7 +165,13 @@ task from the documentation of its execution.
 - A reviewer **comment** explains how the task was interpreted or why particular
   review decisions were made.
 
-This lightweight provenance layer follows the concepts of the PROV data model without requiring users to work directly with RDF or ontologies. It can later be serialised to PROV-O or aligned with standards such as SDMX, DataCite, or archival provenance models. The objective is to improve the **reviewability**, **auditability**, **reproducibility**, and ultimately the **trustworthiness** and **reusability** of reviewed data while remaining compatible with ordinary R data frames.
+This lightweight provenance layer follows the concepts of the PROV data model
+without requiring users to work directly with RDF or ontologies. It can later be
+serialised to PROV-O or aligned with standards such as SDMX, DataCite, or
+archival provenance models. The objective is to improve the **reviewability**,
+**auditability**, **reproducibility**, and ultimately the **trustworthiness**
+and **reusability** of reviewed data while remaining compatible with ordinary R
+data frames.
 
 ```{r attributes1}
 attr(reviewed, "prov_activity")
@@ -150,11 +181,9 @@ attr(reviewed, "prov_agent")
 attr(reviewed, "prov_used")
 ```
 
-## Complete workflow
+## Complete Review Workflow
 
-A complete workflow may consist of several reviews or refinements.
-
-```{r workflow } 
+```{r workflow }
 claims <- claims_df(
   Orange,
   scope_var = "age",
@@ -182,11 +211,12 @@ claims <- claims |>
   finalise_review()
 ```
 
-
-
 ## Adding subsequent rounds of review
 
-Each review round is allocated from the current candidate values. After `finalise_review()`, those candidate values become the accepted result of the previous review, allowing further review rounds to continue from the updated claims.
+Each review round is allocated from the current candidate values. After
+`finalise_review()`, those candidate values become the accepted result of the
+previous review, allowing further review rounds to continue from the updated
+claims.
 
 Consider this second-round review:
 
@@ -201,7 +231,8 @@ Again, the review itself may take place using any suitable workflow.
 reviewed$circumference_review_2[1] <- 32
 ```
 
-Each review round has its own provenance. Different reviewers, software, or evidence can therefore contribute to successive stages of the review.
+Each review round has its own provenance. Different reviewers, software, or
+evidence can therefore contribute to successive stages of the review.
 
 ```{r explain2}
 reviewed <- reviewed |>
@@ -224,14 +255,18 @@ circumference_review_2
 
 ## Finalising a review
 
-Once the review is complete, the current reviewed values become the new candidate values. The review history is retained, allowing future review rounds to continue from the released version while preserving the complete review trail.
+Once the review is complete, the current reviewed values become the new
+candidate values. The review history is retained, allowing future review rounds
+to continue from the released version while preserving the complete review
+trail.
 
 ```{r finalise}
 reviewed <- reviewed |>
   finalise_review()
 ```
 
-The review history is preserved, while future review rounds begin from the finalised candidate values.
+The review history is preserved, while future review rounds begin from the
+finalised candidate values.
 
 ```{r names-finalised}
 names(reviewed)
@@ -241,11 +276,153 @@ names(reviewed)
 head(reviewed, 6)
 ```
 
-The complete review algebra therefore consists of four operations: create reviewable `claims`, allocate `review` rounds, document (`explain`) each review, and promote the current review into the next candidate version.
+The complete review algebra therefore consists of four operations: create
+reviewable `claims`, allocate `review` rounds, document (`explain`) each review,
+and promote the current review into the next candidate version.
+
+## Dual structure and complete workflow
+
+The review algebra can be viewed as a dual extension of tidy data.
+
+An ordinary tidy data frame represents observations in rows and variables in
+columns. The tidyverse provides an expressive algebra for transforming these
+observations through operations such as `mutate()`, `filter()`, `select()`,
+`join()`, and `pivot_*()`.
+
+The review algebra introduces a second algebra that is structurally aligned with
+the tidy data algebra. The upper layer contains successive semantic states of
+the same claim vectors (reviewable variables), while the lower layer records
+provenance describing with statements about the transitions between those states
+how the transition took place.
+
+```         
+                 REVIEW MATRIX
+
+┌──────────────────────────────────────────────────────┐
+│ Upper layer: review states                           │
+│                                                      │
+│ candidate → review 1 → review 2 → ... → reviewed     │
+└──────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│ Lower layer: provenance                              │
+│                                                      │
+│ activity • agent • resources • comments              │
+└──────────────────────────────────────────────────────┘
+```
+
+The two layers share the same structure. Every review column in the upper layer
+has a corresponding provenance description in the lower layer. This shared
+structure makes it possible to derive provenance automatically at different
+levels of detail.
+
+A single provenance statement may describe an entire review column:
+
+> "The bibliographic information was verified by Librarian 1."
+
+or, if required, the provenance can be refined to individual claims:
+
+> "Rows 001, 004 and 005 were corrected after consulting manuscript B."
+
+Because both layers share the same identifiers and ordering, column-level
+provenance and cell-level provenance are different resolutions of the same
+underlying model.
+
+### Review sequencing
+
+Review sequencing
+
+A review column represents a semantic mutation of a reviewable variable.
+
+Unlike ordinary `mutate()` operations, review mutations are ordered because
+their sequence may affect the final result. For example, a two-stage imputation
+or a sequence of authority-file reconciliations is generally not commutative.
+
+For this reason, every review column belongs to a strictly ordered review chain.
+
+A complete workflow may consist of several reviews or refinements.
+
+```         
+               review algebra
+
+bibliography_candidate
+          │
+          ▼
+bibliography_author_year
+          │
+          ▼
+bibliography_publisher
+          │
+          ▼
+bibliography_reviewed
+
+
+              provenance algebra
+
+author_year
+    activity
+    agent
+    used
+    ...
+
+publisher
+    activity
+    agent
+    used
+```
+
+The column names provide meaningful identifiers for the review stages, whereas
+the package records their ordering internally. This allows review stages to be
+named according to their intended purpose while preserving the temporal sequence
+of the review.
+
+Each review stage therefore has two complementary descriptions.
+
+A `label` records the intended review activity before it is carried out. An
+explanation records what actually happened during the review.
+
+The label expresses the planned activity:
+
+> "Verify authors and publication years."
+
+whereas the explanation documents its execution in an optional comment:
+
+> "Verified by Librarian 1 using the National Bibliography. Three publication
+> years were corrected."
+
+This distinction mirrors the distinction in provenance models between an
+activity specification and the execution of that activity.
+
+### Relation to Supply and Use and Input-Output Tables
+
+Readers familiar with Supply and Use Tables (SUTs) or Symmetric Input-Output
+Tables (SIOTs) may recognise a similar design pattern.
+
+Supply and Use Tables (SUTs) and Symmetric Input-Output Tables (SIOTs) consist
+of several matrices that describe different aspects of the same economy while
+sharing a common ordering of industries and products. Because these matrices are
+structurally aligned, aggregates such as gross domestic product (GDP) become
+deterministic functions of the detailed accounts (f.e., total consumption, total
+import.) Changes in one part of the system therefore propagate consistently
+through the others.
+
+The review algebra applies the same principle to semantic review. The upper
+matrix records successive semantic states of a tidy data frame, while the lower
+matrix records the provenance associated with those states. Because the two
+matrices share the same structure, provenance can be generated at the level of
+entire review stages or, when necessary, for individual reviewed claims.
+
+Unlike many review systems, `review` does not store separate audit logs or
+provenance graphs as primary data structures. Instead, it stores successive
+semantic states of reviewable variables together with lightweight provenance
+describing each review stage. Audit reports, provenance graphs, release notes,
+and cell-level revision histories are deterministic projections of this
+representation rather than independently maintained artefacts.
 
 ## Garamantas example
 
-The review algebra is independent of the application domain. The same workflow can be applied to statistical observations, archival metadata, cultural heritage collections, or machine-generated annotations.
+The review algebra is independent of the application domain. The same workflow
+can be applied to statistical observations, archival metadata, cultural heritage
+collections, or machine-generated annotations.
 
 ```{r garamantas}
 garamantas <- data.frame(
@@ -294,8 +471,36 @@ print(garamantas_reviewed)
 attributes(garamantas_reviewed)
 ```
 
-Although the application domain differs, the review algebra remains unchanged. `review()` creates successive review versions, `explain()`records their provenance, and `finalise_review()` promotes the current reviewed values into the next candidate version.
+## Conclusion
 
-The aim of the **review** package is to increase the trustworthiness, reviewability, and reusability of tabular data before they are released or exchanged with collaborators. Rather than replacing existing data engineering workflows, it adds a lightweight semantic review layer that preserves both the review history and its provenance.
+Although the application domain differs, the review algebra remains unchanged.
+`review()` creates successive review versions, `explain()`records their
+provenance, and `finalise_review()` promotes the current reviewed values into
+the next candidate version.
 
-Once a review has been completed, the resulting data can be published, archived, or exchanged using existing metadata standards. The companion [dataset package](https://dataset.dataobservatory.eu/) provides an R-native representation for describing and serialising released datasets, allowing reviewed data to be exchanged in a reproducible and interoperable form.
+The aim of the **review** package is to increase the trustworthiness,
+reviewability, and reusability of tabular data before they are released or
+exchanged with collaborators. Rather than replacing existing data engineering
+workflows, it adds a lightweight semantic review layer that preserves both the
+review history and its provenance. The package achieves this with a dual
+extension of the `tidyverse` data model for iterative semantic review of tabular
+data.
+
+The package extends ordinary tidy workflows with review states and provenance
+while preserving compatibility with familiar data-frame operations. It provides
+a vectorised review workspace for creating, reviewing,documenting, and
+finalising semantic claims without prescribing how reviews are carried out,
+allowing review activities to be performed in R or external tools such as
+spreadsheets, databases, and interactive review interfaces.
+
+Although it is not an ontology toolkit, its design is informed by provenance,
+policy, and statistical quality-control models, enabling review histories to be
+audited, serialised, and exchanged in a reproducible form (You can read more
+about this in the [From Review Algebra to Provenance
+Modelling](https://review.dataobservatory.eu/articles/prov.html) vignette.)
+
+Once a review has been completed, the resulting data can be published, archived,
+or exchanged using existing metadata standards. The companion [dataset
+package](https://dataset.dataobservatory.eu/) provides an R-native
+representation for describing and serialising released datasets, allowing
+reviewed data to be exchanged in a reproducible and interoperable form.

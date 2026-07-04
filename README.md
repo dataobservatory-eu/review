@@ -15,15 +15,20 @@ WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.o
 coverage](https://codecov.io/gh/dataobservatory-eu/review/graph/badge.svg)](https://app.codecov.io/gh/dataobservatory-eu/review)
 <!-- badges: end -->
 
-**review** provides a lightweight review algebra for iterative semantic
-review of tabular data.
+**review** a tidy relational algebra and a dual extension of the
+*tidyverse* data model for iterative semantic review of tabular data.
 
-Rather than overwriting reviewed values, the package creates successive
-review rounds that preserve candidate values, review history,
-observation status, and provenance. It supports reproducible
-human-in-the-loop review workflows in official statistics, digital
-humanities, archives, cultural heritage, and other data-intensive
-disciplines.
+The package provides a vectorised review workspace for creating,
+reviewing, documenting, and finalising semantic claims while remaining
+compatible with ordinary data frames. Rather than prescribing how
+reviews are carried out, it supports reproducible review workflows that
+integrate naturally with external tools such as spreadsheets, databases,
+and interactive review interfaces.
+
+Although it is not an ontology toolkit, its design is informed by
+provenance, policy, and statistical quality-control models, allowing
+review histories to be audited, serialised, compared with expected
+review activities, and exchanged in a reproducible form.
 
 ## Installation
 
