@@ -26,12 +26,25 @@ authors:
 articles:
 
   - title: "Getting Started"
+    desc: >
+      An introduction into the extension of tidyverse with a review algebra
+      based on four verbs.
     contents:
       - intro
 
   - title: "Provenance"
+    desc: >
+      How to use the dual algebra to create vectorised semantic statements
+      about the provenance of transitions happening in a tidy review pipeline.
     contents:
       - prov
+
+  - title: "Dual Algebra"
+    desc: >
+      Combination of tidyverse and review and outlook to potential inference
+      use cases.
+    contents:
+      - tidyverse
 
 reference:
 

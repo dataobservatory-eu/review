@@ -20,7 +20,6 @@ Description:  Provides a tidy relational algebra and a dual extension of the
    quality-control models, allowing review histories to be audited,
    serialised, compared with expected review activities, and exchanged in a
    reproducible form.
-
 License: MIT + file LICENSE
 Encoding: UTF-8
 URL: https://review.dataobservatory.eu/,

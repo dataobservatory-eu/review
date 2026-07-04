@@ -29,9 +29,7 @@ introduce the four verbs that support semantic review. The second vignette,
 Modelling](https://review.dataobservatory.eu/articles/prov.html), explained how
 review rounds can be interpreted as lightweight provenance activities.
 
-This vignette focuses on how the review algebra fits naturally into ordinary
-tidyverse workflows. The package extends ordinary tidy workflows with review
-states and provenance while preserving compatibility with familiar data-frame
+This vignette focuses on how the review algebra fits naturally into ordinary tidyverse workflows. The package extends ordinary tidy workflows with review states and provenance while preserving compatibility with familiar data-frame
 operations. The tidyverse provides an elegant relational algebra for
 transforming data frames. Following the principles of tidy data, observations,
 dimensions and attributes are represented explicitly, while many analytical
@@ -110,23 +108,24 @@ Shiny, or in another external process.
 
 ## Review with mutate
 
-A review can be expressed as an ordinary `mutate()` step when the review
-decision is reproducible in code.
+A review can be expressed as an ordinary `mutate()` step when the review decision is reproducible in code.
 
-```{r}
+```{r mutatereview}
+library(dplyr)
 reviewed <- reviewed |>
-  mutate(
-    circumference_review_1 = if_else(
-      claim_id == 1,
-      31,
-      circumference_review_1
+  dplyr::mutate(
+    circumference_review_1 = 
+      dplyr::if_else(
+         claim_id == 1,
+          31,
+          circumference_review_1
     )
   )
 ```
 
 The review round can then be documented.
 
-```{r}
+```{r mutateexplain}
 reviewed <- reviewed |>
   explain(
     activity = "coded correction",
@@ -141,7 +140,7 @@ A review may also leave R entirely. For example, the allocated review column can
 be written to a temporary CSV file, edited elsewhere, and read back into the
 same review object.
 
-```{r}
+```{r extfilereview}
 review_file <- tempfile(fileext = ".csv")
 
 write.csv(
@@ -154,7 +153,7 @@ write.csv(
 In a real workflow, the CSV file could be reviewed in a spreadsheet or another
 curation tool. Here we simulate the edited file.
 
-```{r}
+```{r extfilereview2}
 external_review <- read.csv(review_file)
 external_review$circumference_review_1[2] <- 34
 write.csv(external_review, review_file, row.names = FALSE)
@@ -164,7 +163,7 @@ external_review <- read.csv(review_file)
 
 The reviewed values are then joined back by the claim identifier.
 
-```{r}
+```{r relocate}
 reviewed <- reviewed |>
   select(-circumference_review_1) |>
   left_join(external_review, by = "claim_id") |>
@@ -176,7 +175,7 @@ reviewed <- reviewed |>
 
 The same review round can still be explained.
 
-```{r}
+```{r spreadsheet}
 reviewed <- reviewed |>
   explain(
     activity = "spreadsheet review",
@@ -188,16 +187,13 @@ reviewed <- reviewed |>
 
 ## Review in the R console
 
-For small examples, review can also be interactive. A reviewer can inspect the
-object and overwrite one or more values directly.
+For small examples, review can also be interactive. A reviewer can inspect the object and overwrite one or more values directly.
 
 ```{r}
 reviewed$circumference_review_1[3] <- 37
 ```
 
-This is not less valid than a spreadsheet or a pipeline. What matters is that
-the reviewed value is stored in the allocated review column and the review is
-documented with `explain()`.
+This is not less valid than a spreadsheet or a pipeline. What matters is that the reviewed value is stored in the allocated review column and the review is documented with `explain()`.
 
 ## Scope of the review
 
@@ -206,7 +202,7 @@ row-by-row revision of the validity of some claim on a variable. Technically, it
 would be possible to review several variables at one time, which would mean the
 revision of interactions.
 
-```{r}
+```{r varscope}
 data.frame(
   rowid = c(1, 2),
   title = c("Semantics", "Revisions"),
@@ -218,20 +214,22 @@ data.frame(
 
 ```{r}
 library(dplyr)
+
 data.frame(
   rowid = c(1, 2),
   title = c("Semantics", "Revisions"),
   author_year = c("Jane Doe 2026", "Alice Cooper 2021")
-) %>%
-  claims_df(scope_var = "rowid", subject_var = "title") %>%
+) |>
+  claims_df(scope_var = "rowid", subject_var = "title") |>
   review(
     review_var = "author_year",
     label = "Check the author and year of the articles"
-  ) %>%
-  mutate(author_year_review_1 = ifelse(
+  ) |>
+  dplyr::mutate(author_year_review_1 = ifelse(
     test = author_year_review_1 == "Alice Cooper 2021",
-    "Alice Cooper 2022", author_year_review_1
-  )) %>%
+    yes = "Alice Cooper 2022", 
+    no = author_year_review_1)
+    ) |>
   explain(
     activity = "bibliography check",
     agent = person("Librarian"),
@@ -278,3 +276,25 @@ This works best for vector-wise transformations such as `mutate()`,
 Operations that collapse or reshape the data, such as `summarise()` or some
 `pivot_*()` workflows, may change the identity of claims and therefore need more
 explicit handling.
+
+## Conclusion
+
+The `tidyverse` already provides an algebra that is frequently used to construct
+inference workflows. Data are filtered, reconciled, joined, transformed,
+aggregated, and enriched to derive new semantic statements. These inference
+steps are often deterministic, but their meaning and justification remain
+largely implicit in the analysis code and the analyst's expertise.
+
+The \`review\` package introduces a dual extension of the tidy algebra that
+makes one class of these semantic transformations—human review—explicit. Rather
+than merely producing a new data frame, it records the semantic states of
+reviewable variables together with the provenance of the transformations that
+produced them.
+
+Human review is only the first application of this dual algebra. The same
+computational model naturally extends to semantic inference. Rule-based
+reasoning, statistical imputation, authority reconciliation, ontology alignment,
+and AI-assisted annotation all produce successive semantic states that can be
+represented using the same review algebra and provenance layer. In this broader
+view, review is simply one specialised inference operator, distinguished by the
+fact that the transformation is performed or validated by a human agent.
