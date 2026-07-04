@@ -44,13 +44,15 @@ pak::pak("dataobservatory-eu/review")
 The review package provides four verbs for reproducible semantic review.
 
 ``` text
-claims_df()
-      ↓
+  data
+   ↓
+revisions()
+   ↓
 review()
-      ↓
-explain()
-      ↓
-finalise_review()
+   ↓
+document()
+   ↓
+approve()
 ```
 
 - `claims_df()` creates reviewable claims from an ordinary data frame.
@@ -62,12 +64,12 @@ finalise_review()
 
 <!-- -->
 
-- `explain()` records how the review was carried out, including
+- `document()` records how the review was carried out, including
   provenance and optional reviewer comments.
 
 <!-- -->
 
-- `finalise_review()` accepts the reviewed values as the current
+- `finalise_review()` approves the reviewed values as the current
   candidate claims while preserving the complete review history.
 
 ## Example
@@ -75,7 +77,7 @@ finalise_review()
 ``` r
 library(review)
 
-claims <- claims_df(
+claims <- revisions(
   Orange,
   scope_var = "age",
   subject_var = "Tree"
@@ -90,56 +92,92 @@ reviewed <- claims |>
 reviewed$circumference_review_1[1] <- 31
 
 reviewed <- reviewed |>
-  explain(
-    activity = "manual review",
+  document(
+    revision = "circumference_review_1",
     agent = person("Jane", "Doe", role = "rev"),
     used = "doi:10.5281/zenodo.1234567",
     comment = "Verified against the laboratory notebook."
   ) |>
-  finalise_review()
+  approve()
 
 reviewed
-#>    claim_id  age Tree circumference_candidate circumference_review_1
-#> 1         1  118    1                      31                     31
-#> 2         2  484    1                      58                     58
-#> 3         3  664    1                      87                     87
-#> 4         4 1004    1                     115                    115
-#> 5         5 1231    1                     120                    120
-#> 6         6 1372    1                     142                    142
-#> 7         7 1582    1                     145                    145
-#> 8         8  118    2                      33                     33
-#> 9         9  484    2                      69                     69
-#> 10       10  664    2                     111                    111
-#> 11       11 1004    2                     156                    156
-#> 12       12 1231    2                     172                    172
-#> 13       13 1372    2                     203                    203
-#> 14       14 1582    2                     203                    203
-#> 15       15  118    3                      30                     30
-#> 16       16  484    3                      51                     51
-#> 17       17  664    3                      75                     75
-#> 18       18 1004    3                     108                    108
-#> 19       19 1231    3                     115                    115
-#> 20       20 1372    3                     139                    139
-#> 21       21 1582    3                     140                    140
-#> 22       22  118    4                      32                     32
-#> 23       23  484    4                      62                     62
-#> 24       24  664    4                     112                    112
-#> 25       25 1004    4                     167                    167
-#> 26       26 1231    4                     179                    179
-#> 27       27 1372    4                     209                    209
-#> 28       28 1582    4                     214                    214
-#> 29       29  118    5                      30                     30
-#> 30       30  484    5                      49                     49
-#> 31       31  664    5                      81                     81
-#> 32       32 1004    5                     125                    125
-#> 33       33 1231    5                     142                    142
-#> 34       34 1372    5                     174                    174
-#> 35       35 1582    5                     177                    177
+#>    claim_id  age Tree circumference_candidate circumference_1
+#> 1         1  118    1                      30              30
+#> 2         2  484    1                      58              58
+#> 3         3  664    1                      87              87
+#> 4         4 1004    1                     115             115
+#> 5         5 1231    1                     120             120
+#> 6         6 1372    1                     142             142
+#> 7         7 1582    1                     145             145
+#> 8         8  118    2                      33              33
+#> 9         9  484    2                      69              69
+#> 10       10  664    2                     111             111
+#> 11       11 1004    2                     156             156
+#> 12       12 1231    2                     172             172
+#> 13       13 1372    2                     203             203
+#> 14       14 1582    2                     203             203
+#> 15       15  118    3                      30              30
+#> 16       16  484    3                      51              51
+#> 17       17  664    3                      75              75
+#> 18       18 1004    3                     108             108
+#> 19       19 1231    3                     115             115
+#> 20       20 1372    3                     139             139
+#> 21       21 1582    3                     140             140
+#> 22       22  118    4                      32              32
+#> 23       23  484    4                      62              62
+#> 24       24  664    4                     112             112
+#> 25       25 1004    4                     167             167
+#> 26       26 1231    4                     179             179
+#> 27       27 1372    4                     209             209
+#> 28       28 1582    4                     214             214
+#> 29       29  118    5                      30              30
+#> 30       30  484    5                      49              49
+#> 31       31  664    5                      81              81
+#> 32       32 1004    5                     125             125
+#> 33       33 1231    5                     142             142
+#> 34       34 1372    5                     174             174
+#> 35       35 1582    5                     177             177
+#>    circumference_review_1 circumference_approved
+#> 1                      31                     30
+#> 2                      31                     58
+#> 3                      31                     87
+#> 4                      31                    115
+#> 5                      31                    120
+#> 6                      31                    142
+#> 7                      31                    145
+#> 8                      31                     33
+#> 9                      31                     69
+#> 10                     31                    111
+#> 11                     31                    156
+#> 12                     31                    172
+#> 13                     31                    203
+#> 14                     31                    203
+#> 15                     31                     30
+#> 16                     31                     51
+#> 17                     31                     75
+#> 18                     31                    108
+#> 19                     31                    115
+#> 20                     31                    139
+#> 21                     31                    140
+#> 22                     31                     32
+#> 23                     31                     62
+#> 24                     31                    112
+#> 25                     31                    167
+#> 26                     31                    179
+#> 27                     31                    209
+#> 28                     31                    214
+#> 29                     31                     30
+#> 30                     31                     49
+#> 31                     31                     81
+#> 32                     31                    125
+#> 33                     31                    142
+#> 34                     31                    174
+#> 35                     31                    177
 ```
 
 ## Learn more
 
-The package includes two introductory vignettes:
+The package includes three introductory vignettes:
 
 - [The Review
   Algebra](https://review.dataobservatory.eu/articles/intro.html)
@@ -150,6 +188,13 @@ The package includes two introductory vignettes:
   Modelling](https://review.dataobservatory.eu/articles/prov.html)
   explains the underlying provenance model and its relationship to the
   W3C PROV data model.
+
+- [Review Workflows in the
+  Tidyverse](https://review.dataobservatory.eu/articles/tidyverse.html)
+  how the review algebra integrates naturally into ordinary tidyverse
+  workflows. The package extends tidy workflows with review states and
+  provenance while preserving compatibility with familiar data-frame
+  operations.
 
 You can read them by clicking to the links to the package website, or,
 after installing the package, open them with:

@@ -48,14 +48,16 @@ pak::pak("dataobservatory-eu/review")
 
 The review package provides four verbs for reproducible semantic review.
 
-``` text
-claims_df()
-      ↓
+```text
+  data
+   ↓
+revisions()
+   ↓
 review()
-      ↓
-explain()
-      ↓
-finalise_review()
+   ↓
+document()
+   ↓
+approve()
 ```
 
 - `claims_df()` creates reviewable claims from an ordinary data frame.
@@ -66,12 +68,12 @@ finalise_review()
 
 <!-- -->
 
-- `explain()` records how the review was carried out, including provenance and
+- `document()` records how the review was carried out, including provenance and
   optional reviewer comments.
 
 <!-- -->
 
-- `finalise_review()` accepts the reviewed values as the current candidate
+- `finalise_review()` approves the reviewed values as the current candidate
   claims while preserving the complete review history.
 
 ## Example
@@ -79,7 +81,7 @@ finalise_review()
 ```{r example}
 library(review)
 
-claims <- claims_df(
+claims <- revisions(
   Orange,
   scope_var = "age",
   subject_var = "Tree"
@@ -94,25 +96,27 @@ reviewed <- claims |>
 reviewed$circumference_review_1[1] <- 31
 
 reviewed <- reviewed |>
-  explain(
-    activity = "manual review",
+  document(
+    revision = "circumference_review_1",
     agent = person("Jane", "Doe", role = "rev"),
     used = "doi:10.5281/zenodo.1234567",
     comment = "Verified against the laboratory notebook."
   ) |>
-  finalise_review()
+  approve()
 
 reviewed
 ```
 
 ## Learn more
 
-The package includes two introductory vignettes:
+The package includes three introductory vignettes:
 
 - [The Review Algebra](https://review.dataobservatory.eu/articles/intro.html)
   introduces the four review verbs and demonstrates a complete review workflow.
 
 - [From Review Algebra to Provenance   Modelling](https://review.dataobservatory.eu/articles/prov.html) explains the underlying provenance model and its relationship to the W3C PROV data model.
+
+- [Review Workflows in the Tidyverse](https://review.dataobservatory.eu/articles/tidyverse.html)  how the review algebra integrates naturally into ordinary tidyverse workflows. The package extends tidy workflows with review states and provenance while preserving compatibility with familiar data-frame operations. 
 
 You can read them by clicking to the links to the package website, or, after installing the package, open them with:
 

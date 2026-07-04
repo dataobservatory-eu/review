@@ -1,4 +1,14 @@
-## Development improvements
+# review 0.0.3
+
+- For dplyr consistency, `explain()` renamed to `document()`, and the [explain 
+method](https://dplyr.tidyverse.org/reference/explain.html) is retained for 
+future compatibility. 
+- [Review Workflows in the Tidyverse](https://review.dataobservatory.eu/articles/tidyverse.html)  
+how the review algebra integrates naturally into ordinary tidyverse workflows. 
+The package extends tidy workflows with review states and provenance while 
+preserving compatibility with familiar data-frame operations. 
+
+# review 0.0.2
 
 - Added support for review labels, reviewer comments, and richer provenance
   metadata.

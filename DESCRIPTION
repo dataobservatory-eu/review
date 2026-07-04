@@ -1,14 +1,14 @@
 Package: review
 Title: Tidy Relational Algebra for Semantic Review
 Version: 0.0.3
-Language: en-GB
+Language: en-US
 Authors@R: 
     person(given = "Daniel", 
            family = "Antal", 
            email = "daniel.antal@dataobservatory.eu", 
            role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-7513-6760"))
-Description:  Provides a tidy relational algebra and a dual extension of the 
+Description: Provides a tidy relational algebra and a dual extension of the 
    tidyverse data model for iterative semantic review of tabular data. 
    The package provides a vectorised review workspace for creating, reviewing,
    documenting, and finalising semantic claims while remaining compatible

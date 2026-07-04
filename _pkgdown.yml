@@ -55,15 +55,15 @@ reference:
     contents:
       - revisions
       - review
-      - explain
-      - accept
+      - document
+      - approve
       - next_revisions
 
-  - title: "claim_df"
+  - title: "claims_df"
     desc: >
       Create a new data.frame with lightweight but enriched semantics.
     contents:
-      - claim_df
+      - claims_df
 
   - title: "Data and Metadata"
     desc: "Metadata crosswalk with standard vocabularies and schemas."
