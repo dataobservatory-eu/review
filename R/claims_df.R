@@ -55,21 +55,18 @@ claims_df <- function(
 
   class(claims) <- unique(c("claims_df", class(claims)))
 
+
+  ## Partition the dataset into semantic segments ----------------------------
   attr(claims, "id") <- id_var
   attr(claims, "scope") <- scope_var
   attr(claims, "subject") <- subject_var
   attr(claims, "reviewable") <- reviewable
 
-  attr(claims, "review_column") <- stats::setNames(
-    paste0(reviewable, "_candidate"),
-    reviewable
-  )
-
-  ## Initialise provenance metadata ------------------------------------
+  ## Initialise provenance metadata ------------------------------------------
 
   attr(claims, "prov_id") <- "candidate"
 
-  ## Initialise candidate metadata -------------------------------------
+  ## Initialise candidate metadata -------------------------------------------
 
   candidate_activity <-
     if (is.null(prov_activity)) NA_character_ else prov_activity
@@ -85,8 +82,10 @@ claims_df <- function(
     stats::setNames(candidate_activity, "candidate")
   attr(claims, "prov_agent") <- stats::setNames(candidate_agent, "candidate")
   attr(claims, "prov_used") <- stats::setNames(candidate_used, "candidate")
-  attr(claims, "review_label") <- stats::setNames(NA_character_, "candidate")
-  attr(claims, "prov_comment") <- stats::setNames(NA_character_, "candidate")
+
+  ## A candidate is a reviewable variable in state 0 --------------------
+  attr(claims, "review_sequence") <-
+    stats::setNames(0L, "candidate")
 
   claims
 }
