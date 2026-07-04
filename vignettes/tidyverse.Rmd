@@ -68,25 +68,26 @@ external process before the workflow can continue.
 
 The `review` package adds this missing in-between state.
 
-``` text
-data
-  ↓
-claims_df()
-  ↓
-review()
-  ↓
-external review
-  ↓
-explain()
-  ↓
-finalise_review()
+```
+<text, observation>
+      ↓
+     data
+      ↓
+  revisions()
+      ↓
+   review()
+      ↓
+< external review >
+      ↓
+  explain()
+      ↓
+   accept()
 ```
 
-`review()` does not perform the review. It allocates a review column and allows
-the workflow to pause.
+`review()` does not perform the review. It allocates a review column and allows the workflow to pause.
 
 ```{r}
-claims <- claims_df(
+claims <- revisions(
   Orange,
   scope_var = "age",
   subject_var = "Tree"
@@ -101,10 +102,7 @@ reviewed <- claims |>
 names(reviewed)
 ```
 
-The reviewer may now edit the allocated review column. This can happen in many
-ways: in R (either via an interactive data entry on the consol, or via a
-mutation of the assigned review column), in a spreadsheet, in OpenRefine, in
-Shiny, or in another external process.
+The reviewer may now edit the allocated review column. This can happen in many ways: in R (either via an interactive data entry on the consol, or via a mutation of the assigned review column), in a spreadsheet, in OpenRefine, in Shiny, or in another external process.
 
 ## Review with mutate
 
@@ -114,12 +112,12 @@ A review can be expressed as an ordinary `mutate()` step when the review decisio
 library(dplyr)
 reviewed <- reviewed |>
   dplyr::mutate(
-    circumference_review_1 = 
+    circumference_review_1 =
       dplyr::if_else(
-         claim_id == 1,
-          31,
-          circumference_review_1
-    )
+        claim_id == 1,
+        31,
+        circumference_review_1
+      )
   )
 ```
 
@@ -209,7 +207,7 @@ data.frame(
   author = c("Jane Doe", "Alice Cooper"),
   year = c("2026", "2021")
 ) %>%
-  claims_df(scope_var = "rowid", subject_var = "title")
+  revisions(scope_var = "rowid", subject_var = "title")
 ```
 
 ```{r}
@@ -220,16 +218,16 @@ data.frame(
   title = c("Semantics", "Revisions"),
   author_year = c("Jane Doe 2026", "Alice Cooper 2021")
 ) |>
-  claims_df(scope_var = "rowid", subject_var = "title") |>
+  revisions(scope_var = "rowid", subject_var = "title") |>
   review(
     review_var = "author_year",
     label = "Check the author and year of the articles"
   ) |>
   dplyr::mutate(author_year_review_1 = ifelse(
     test = author_year_review_1 == "Alice Cooper 2021",
-    yes = "Alice Cooper 2022", 
-    no = author_year_review_1)
-    ) |>
+    yes = "Alice Cooper 2022",
+    no = author_year_review_1
+  )) |>
   explain(
     activity = "bibliography check",
     agent = person("Librarian"),
@@ -239,12 +237,12 @@ data.frame(
 
 ## Finalising the review
 
-Once the reviewed values are accepted, `finalise_review()` promotes the current
+Once the reviewed values are accepted, `accept()` promotes the current
 review values back into the candidate columns.
 
 ```{r}
 accepted <- reviewed |>
-  finalise_review()
+  accept()
 
 accepted$circumference_candidate[1:3]
 ```

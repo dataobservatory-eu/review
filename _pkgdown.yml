@@ -53,10 +53,17 @@ reference:
       Create reviewable claims, allocate review rounds,
       document provenance, and finalise reviewed values.
     contents:
-      - claims_df
+      - revisions
       - review
       - explain
-      - finalise_review
+      - accept
+      - next_revisions
+
+  - title: "claim_df"
+    desc: >
+      Create a new data.frame with lightweight but enriched semantics.
+    contents:
+      - claim_df
 
   - title: "Data and Metadata"
     desc: "Metadata crosswalk with standard vocabularies and schemas."

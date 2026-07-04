@@ -17,11 +17,10 @@ test_that("claims_df initialises candidate provenance", {
   expect_equal(attr(claims, "prov_agent"), empty)
   expect_equal(attr(claims, "prov_used"), empty)
 
-  # Only used by review():
-  expect_equal(attr(claims, "review_label"), empty)
-
-  # Only used by explain():
-  expect_equal(attr(claims, "prov_comment"), empty)
+  expect_equal(
+    attr(claims, "review_sequence"),
+    stats::setNames(0L, "candidate")
+  )
 })
 
 test_that("claims_df records supplied candidate provenance", {
@@ -49,10 +48,5 @@ test_that("claims_df records supplied candidate provenance", {
   expect_equal(
     attr(claims, "prov_used"),
     stats::setNames("doi:10.1234/example", "candidate")
-  )
-
-  expect_equal(
-    attr(claims, "review_label"),
-    stats::setNames(NA_character_, "candidate")
   )
 })

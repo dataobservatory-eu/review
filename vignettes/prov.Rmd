@@ -59,7 +59,7 @@ The candidate values represent the current working claims. Calling `review()` cr
 For example,
 
 ```{r claims}
-claims <- claims_df(
+claims <- revisions(
   Orange,
   scope_var = "age",
   subject_var = "Tree"

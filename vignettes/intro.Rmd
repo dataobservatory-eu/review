@@ -41,11 +41,11 @@ The review package provides four verbs for reproducible semantic review:
 - `claims_df()` creates reviewable claims.
 - `review()` allocates a review round and labels the intended review task.
 - `explain()` records how the review was carried out.
-- `finalise_review()` accepts the reviewed values as the current candidate
-  claims while preserving the complete review history.
+- `accept()` accepts the reviewed values as the current candidate claims while
+  preserving the complete review history.
 
 ```{r claims_df}
-claims <- claims_df(
+claims <- revisions(
   Orange,
   scope_var = "age",
   subject_var = "Tree"
@@ -54,8 +54,9 @@ claims <- claims_df(
 head(claims, n = 6)
 ```
 
-A `claims_df` separates variables into three structural roles and one or more
-reviewable variables.
+`revisions()` constructs a semantically enriched `claims_df` tibble that
+separates variables into three structural roles and one or more reviewable
+variables.
 
 - `Identifier` uniquely identifies each claim.
 - `Scope` defines the context in which the claim is made.
@@ -208,15 +209,14 @@ claims <- claims |>
     agent = "OpenRefine 3.10",
     used = "doi:10.2908/NAMA_10_GDP"
   ) |>
-  finalise_review()
+  accept()
 ```
 
 ## Adding subsequent rounds of review
 
 Each review round is allocated from the current candidate values. After
-`finalise_review()`, those candidate values become the accepted result of the
-previous review, allowing further review rounds to continue from the updated
-claims.
+`accept()`, those candidate values become the accepted result of the previous
+review, allowing further review rounds to continue from the updated claims.
 
 Consider this second-round review:
 
@@ -262,7 +262,7 @@ trail.
 
 ```{r finalise}
 reviewed <- reviewed |>
-  finalise_review()
+  accept()
 ```
 
 The review history is preserved, while future review rounds begin from the
@@ -435,7 +435,7 @@ garamantas <- data.frame(
   depicts = rep("building", 3)
 )
 
-garamantas_claims <- claims_df(
+garamantas_claims <- revisions(
   garamantas,
   scope_var = "instance_of",
   subject_var = "resources"
@@ -448,13 +448,15 @@ garamantas_claims$depicts_review_1[2] <- "group of people"
 Although the domain differs, the review algebra remains unchanged:
 
 ``` text
-claims_df()
-      ↓
+revisions()
+   ↓
 review()
-      ↓
+   ↓
 explain()
-      ↓
-finalise_review()
+   ↓
+accept()
+   ↓
+next_revisions()
 ```
 
 ```{r showgaramatas}
@@ -464,7 +466,7 @@ garamantas_reviewed <- garamantas_claims |>
     agent = person("Alice", "Curator", role = "rev"),
     used = "doi:example001"
   ) |>
-  finalise_review()
+  accept()
 
 print(garamantas_reviewed)
 
@@ -473,34 +475,76 @@ attributes(garamantas_reviewed)
 
 ## Conclusion
 
-Although the application domain differs, the review algebra remains unchanged.
-`review()` creates successive review versions, `explain()`records their
-provenance, and `finalise_review()` promotes the current reviewed values into
-the next candidate version.
+The **review** package provides a human-centric semantic review system for data
+that can be normalised into tidy tabular form. Whether observations originate
+from spreadsheets, relational databases, file systems, RDF graphs, or other
+structured sources, and represent statistical, digital humanities, or natural
+science observations, the review algebra remains unchanged once they have been
+represented as reviewable claims.
 
-The aim of the **review** package is to increase the trustworthiness,
-reviewability, and reusability of tabular data before they are released or
-exchanged with collaborators. Rather than replacing existing data engineering
-workflows, it adds a lightweight semantic review layer that preserves both the
-review history and its provenance. The package achieves this with a dual
-extension of the `tidyverse` data model for iterative semantic review of tabular
-data.
+```         
+Observation layer
+    │
+    ├── data.frame
+    ├── CSV
+    ├── RDF
+    ├── File system
+    └── Database
+            │
+            ▼
+      revisions()
+            │
+            ▼
+      Semantic stabilisation
+      review()
+      explain()
+      accept()
+            │
+            ▼
+     Stable semantic object
+            │
+    ├── RDF
+    ├── Frictionless
+    ├── Data frame
+    └── SQL
+```
 
-The package extends ordinary tidy workflows with review states and provenance
-while preserving compatibility with familiar data-frame operations. It provides
-a vectorised review workspace for creating, reviewing,documenting, and
-finalising semantic claims without prescribing how reviews are carried out,
-allowing review activities to be performed in R or external tools such as
-spreadsheets, databases, and interactive review interfaces.
+The package does not attempt to replace existing data engineering,\
+transformation, or knowledge representation tools. Instead, it adds a
+lightweight\
+semantic review layer that can be inserted into existing tidyverse workflows.\
+Its aim is to make semantic review reproducible by recording review states,\
+review activities, and their provenance while remaining compatible with
+ordinary\
+data-frame operations.
 
-Although it is not an ontology toolkit, its design is informed by provenance,
-policy, and statistical quality-control models, enabling review histories to be
-audited, serialised, and exchanged in a reproducible form (You can read more
-about this in the [From Review Algebra to Provenance
-Modelling](https://review.dataobservatory.eu/articles/prov.html) vignette.)
+The central design principle is that review should be independent of the\
+original data source. Any resource that can be normalised into reviewable tidy\
+claims can be reviewed using the same workflow. This makes the review algebra\
+equally applicable to conventional tabular data, flattened RDF graphs,\
+filesystem observations, and other structured resources, while leaving more\
+complex graph structures or unstructured documents to specialised review\
+approaches.
 
-Once a review has been completed, the resulting data can be published, archived,
-or exchanged using existing metadata standards. The companion [dataset
-package](https://dataset.dataobservatory.eu/) provides an R-native
-representation for describing and serialising released datasets, allowing
-reviewed data to be exchanged in a reproducible and interoperable form.
+The package provides a vectorised review workspace for creating, reviewing,\
+documenting, and finalising semantic claims without prescribing how reviews are\
+performed. Review activities may take place entirely within R or be delegated
+to\
+external tools such as spreadsheets, databases, or interactive review\
+interfaces before the reviewed claims are returned to the workflow.
+
+Although `review` is not an ontology or knowledge graph toolkit, its design is\
+informed by provenance, policy, and statistical quality-control models,\
+allowing review histories to be audited, serialised, and exchanged in a\
+reproducible form. The accompanying vignette [From Review Algebra to Provenance
+Modelling](https://review.dataobservatory.eu/articles/prov.html) describes how
+review activities can be represented using lightweight\
+provenance metadata.
+
+Once a review has been completed, the resulting semantic claims can be\
+transformed into the representation most appropriate for publication,\
+preservation, or exchange. The companion [dataset
+package](https://dataset.dataobservatory.eu/) package provides an\
+R-native representation for describing and serialising released datasets,\
+supporting reproducible and interoperable publication using existing metadata\
+standards.

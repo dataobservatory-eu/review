@@ -2,7 +2,7 @@
 #'
 #' Recommended mapping between review activities and SDMX observation
 #' status codes. The table provides default observation statuses for use
-#' by [finalise_review()]. Activities describe the provenance of a review
+#' by [accept()]. Activities describe the provenance of a review
 #' step, while observation statuses describe the semantic status of the
 #' resulting observation.
 #'

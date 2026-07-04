@@ -21,7 +21,7 @@ review_activity_crosswalk
 \description{
 Recommended mapping between review activities and SDMX observation
 status codes. The table provides default observation statuses for use
-by \code{\link[=finalise_review]{finalise_review()}}. Activities describe the provenance of a review
+by \code{\link[=accept]{accept()}}. Activities describe the provenance of a review
 step, while observation statuses describe the semantic status of the
 resulting observation.
 }
