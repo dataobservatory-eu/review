@@ -2,14 +2,21 @@
 % Please edit documentation in R/review.R
 \name{review}
 \alias{review}
-\title{Initialise a review round}
+\title{Initialise a review}
 \usage{
-review(.data, review_var, obs_status = NULL, label = NULL)
+review(.data, review_var, review_id = NULL, obs_status = NULL, label = NULL)
 }
 \arguments{
 \item{.data}{A \code{claims_df}.}
 
-\item{review_var}{A reviewable variable in \code{.data}.}
+\item{review_var}{Character scalar identifying the current review state.
+A reviewable variable name is treated as shorthand for its
+corresponding \verb{_candidate} column. Alternatively, an existing review
+column may be supplied to continue a multi-stage review workflow.}
+
+\item{review_id}{Optional identifier for the new review state.
+It becomes the suffix of the new review column. If omitted,
+the review sequence number is used.}
 
 \item{obs_status}{Optional observation status assigned to new review
 values.}
@@ -22,13 +29,15 @@ After review, it identifies the completed review activity.}
 A \code{claims_df} with one additional review round.
 }
 \description{
-Creates a new review round for a reviewable variable in a
-\code{claims_df}. The current review values are copied into new review
-columns placed immediately after their predecessors.
+Creates a new review state for a reviewable variable or an existing
+review state in a \code{claims_df}. The current values are copied into a new
+review column placed immediately after its predecessor.
 }
 \details{
-\code{review()} creates a new review round by allocating review columns and
-assigning a human-readable \code{label} describing the intended review task.
+\code{review()} creates a new review state by allocating a new review column.
+If \code{review_id} is supplied, it is used as the suffix of the new review column.
+Otherwise the review sequence number is used. It is also possible to assign
+a human-readable \code{label} describing the intended review task.
 The label serves both as an instruction for reviewers in interactive
 review workflows and as the label of the review activity once the review
 has been completed.
@@ -50,11 +59,23 @@ claims <- claims_df(
   subject_var = "Tree"
 )
 
+# Create an initial review.
 reviewed <- claims |>
   review(
-    "circumference",
+    "circumference", # equal to: circumference_candidate
+    review_id = "remeasured",
     label = "Remeasure the circumference of each tree at the recorded age."
   )
+
+# Continue the review.
+reviewed <- reviewed |>
+  review(
+    "circumference_remeasured",
+    review_id = "reviewed",
+    label = "Verify the remeasurement independently."
+  )
+
+names(reviewed)
 
 attr(reviewed, "review_label")
 }
